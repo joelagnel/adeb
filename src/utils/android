@@ -1,0 +1,12 @@
+#!/bin/bash -x
+# Utilities to interact with android more easily
+
+cmd_exists() {
+	which $1 > /dev/null
+	return $?
+}
+
+do_adb_root() {
+	adb root
+	return $?
+}
