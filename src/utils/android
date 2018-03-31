@@ -1,7 +1,31 @@
 #!/bin/bash -x
 # Utilities to interact with android more easily
 
-script_full_path=$( cd "$(dirname "$0")" ; pwd -P )
+make_csv() {
+	out=""
+	in=$1
+	for p in $in; do
+		if [ "x$out" == "x" ]; then
+			out=$p
+		else
+			out="$out,$p"
+		fi
+	done
+	echo $out
+}
+
+make_spaces() {
+	out=""
+	in=$1
+	for p in $in; do
+		if [ "x$out" == "x" ]; then
+			out=$p
+		else
+			out="$out $p"
+		fi
+	done
+	echo $out
+}
 
 cmd_exists() {
 	which $1 > /dev/null

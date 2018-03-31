@@ -1,7 +1,10 @@
 #!/bin/bash -e
 spath=$( cd "$(dirname "$0")" ; pwd -P )
+curdir=$( pwd -P )
 
 source $spath/utils/android
+
+if [[ $EUID -ne 0 ]]; then echo "This tool must be run as root"; exit 3; fi
 
 usage() {
 	echo "androdeb"
@@ -22,20 +25,20 @@ usage() {
 }
 
 # Set default vars
-DISTRO=buster;      PACKAGES=""
+DISTRO=buster;      PACKAGES="";	ARCH=arm64
 
 # Parse command line parameters
 if [ $# -lt 1 ]; then usage; fi; POSITIONAL=()
-while [[ $# -gt 0 ]]; do; key="$1"
+while [[ $# -gt 0 ]]; do key="$1";
 case $key in
     prepare) PREP=1;     shift || true;    ;;
     shell) SHELL=1;     shift || true;     ;;
-    --tracers) TRACERS=1; source $spath/packages/tracers; shift || true; ;;
-    --compilers) COMPILERS=1; source $spath/packages/compilers; shift || true; ;;
-    --editors) EDITORS=1; source $spath/packages/editors; shift || true; ;;
-    --scheduler) SCHEDULER=1; source $spath/packages/scheduler; shift || true; ;;
-    --fullbuild) FULLBUILD=1; for f in $(ls $spath/packages); do source packages/$f; done; shift || true; ;;
-    --bcc)    BCC=1; shift || true;     ;;
+    --tracers) source $spath/packages/tracers; shift || true; ;;
+    --compilers) source $spath/packages/compilers; shift || true; ;;
+    --editors) source $spath/packages/editors; shift || true; ;;
+    --scheduler) source $spath/packages/scheduler; shift || true; ;;
+    --fullbuild) for f in $(ls $spath/packages); do source packages/$f; done; shift || true; ;;
+    --bcc) source $spath/packages/bcc; BCC=1; shift || true;     ;;
     --kernelsrc) KERNELSRC="$2"; shift || true;     shift || true;     ;;
     --tempdir) TMPDIR="$2"; shift || true;     shift || true;     ;;
     *) echo "Unknown option ($1)"; usage; ;;
@@ -50,7 +53,20 @@ fi
 #  PREPARE
 ##########################################################
 # Where do we want to store temporary files
-if [[ -z ${TMPDIR+x} ]]  || [[ ! -d "${TMPDIR}" ]]; then
-	TMPDIR=`mktemp`; fi
+MKTEMP=0; if [[ -z ${TMPDIR+x} ]]  || [[ ! -d "${TMPDIR}" ]]; then
+	TMPDIR=`mktemp -d`; MKTEMP=1; fi
 
-echo $PACKAGES
+OUT_TMP=$TMPDIR/debian; rm -rf $OUT_TMP; mkdir -p $OUT_TMP
+
+echo "Full package list: $PACKAGES"
+echo "Using temporary directory: $OUT_TMP"
+
+time qemu-debootstrap --arch arm64 --include=$(make_csv "$PACKAGES") \
+	--variant=minbase $DISTRO $OUT_TMP http://deb.debian.org/debian/
+
+cp $spath/addons/bashrc $OUT_TMP/.bashrc
+
+# rm -rf $OUT_TMP; if [ $MKTEMP -eq 1 ]; then rm -rf $TMPDIR; fi
+
+# Use --foreign and --variant=minbase to build minimal deb first stage
+# Use fakeroot tar to build tar with root files

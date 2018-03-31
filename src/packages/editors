@@ -1,4 +1,5 @@
 PACKAGES+="\
-emacs
 vim
+nano
+git
 "

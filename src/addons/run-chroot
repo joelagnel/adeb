@@ -1,0 +1,12 @@
+#!/system/bin/sh
+
+cd /data/
+mount -t proc /proc debian/proc/ > /dev/null
+mount --rbind /dev debian/dev/ > /dev/null
+mount --rbind /sys debian/sys/ > /dev/null
+mount --rbind /sys/kernel/debug/ debian/sys/kernel/debug/ > /dev/null
+mount --rbind /sys/kernel/debug/tracing/ debian/sys/kernel/debug/tracing/
+if [ -d /system/ ]; then
+	mount --bind /system debian/system/
+fi
+chroot debian/ /bin/bash --rcfile /bashrc

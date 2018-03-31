@@ -1,0 +1,4 @@
+# Create a more sane trace development environment!
+
+export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/share/bcc/tools/
+export TMPDIR=/tmp/
