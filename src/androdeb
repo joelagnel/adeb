@@ -1,0 +1,42 @@
+#!/bin/bash -e
+set -x
+
+script_full_path=$( cd "$(dirname "$0")" ; pwd -P )
+
+source $script_full_path/utils/android
+
+# Set default vars
+DISTRO=buster
+
+# Parse command line parameters
+POSITIONAL=()
+while [[ $# -gt 0 ]]
+do
+key="$1"
+
+case $key in
+    -k|--kernelsrc)
+    KERNEL_PATH="$2"
+    shift || true # past argument
+    shift || true # past value
+    ;;
+    -t|--tempdir)
+    TMPDIR="$2"
+    shift || true # past argument
+    shift || true # past value
+    ;;
+    *)    # unknown option
+    POSITIONAL+=("$1") # save it in an array for later
+    shift || true # past argument
+    ;;
+esac
+done
+
+set -- "${POSITIONAL[@]}" # restore positional parameters
+
+# Where do we want to store temporary files
+if [[ -z ${TMPDIR+x} ]]  || [[ ! -d "${TMPDIR}" ]]; then
+	TMPDIR=`mktemp`
+fi
+
+

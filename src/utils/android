@@ -1,6 +1,8 @@
 #!/bin/bash -x
 # Utilities to interact with android more easily
 
+script_full_path=$( cd "$(dirname "$0")" ; pwd -P )
+
 cmd_exists() {
 	which $1 > /dev/null
 	return $?
