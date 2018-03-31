@@ -15,3 +15,6 @@ if [ -d /system/ ]; then
 	mount --bind /system debian/system/
 fi
 chroot debian/ /bin/bash --rcfile /bashrc
+
+# tear everything down
+./device-umount-all

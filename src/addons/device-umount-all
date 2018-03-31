@@ -11,6 +11,6 @@ umount_all() {
 	done
 }
 
-for i in $(seq 0 10); do
+for i in $(seq 0 6); do
 	umount_all 2>&1 > /dev/null
 done
