@@ -62,7 +62,7 @@ echo "Full package list: $PACKAGES"
 echo "Using temporary directory: $OUT_TMP"
 
 time qemu-debootstrap --arch arm64 --include=$(make_csv "$PACKAGES") \
-	--variant=minbase $DISTRO $OUT_TMP http://deb.debian.org/debian/
+	$DISTRO $OUT_TMP http://deb.debian.org/debian/
 
 # Some reason debootstrap leaves these founded
 umount $OUT_TMP/proc/sys/fs/binfmt_misc

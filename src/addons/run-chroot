@@ -1,11 +1,16 @@
 #!/system/bin/sh
+spath=$( cd "$(dirname "$0")" ; pwd -P )
 
-cd /data/
-mount -t proc /proc debian/proc/ > /dev/null
-mount --rbind /dev debian/dev/ > /dev/null
-mount --rbind /sys debian/sys/ > /dev/null
-mount --rbind /sys/kernel/debug/ debian/sys/kernel/debug/ > /dev/null
-mount --rbind /sys/kernel/debug/tracing/ debian/sys/kernel/debug/tracing/
+cd $spath
+
+# tear everything down
+./device-umount-all
+
+mount --bind /proc debian/proc/ > /dev/null
+mount --bind /dev debian/dev/ > /dev/null
+mount --bind /sys debian/sys/ > /dev/null
+mount --bind /sys/kernel/debug/ debian/sys/kernel/debug/ > /dev/null
+mount --bind /sys/kernel/debug/tracing/ debian/sys/kernel/debug/tracing/
 if [ -d /system/ ]; then
 	mount --bind /system debian/system/
 fi
