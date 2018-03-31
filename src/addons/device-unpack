@@ -24,7 +24,7 @@ fi
 
 if [ -d /data/androdeb/debian ]; then
 	echo "androdeb environment already exists, doing a tear down"
-	# TODO: run env tear down script first
+	/data/androdeb/device-umount-all
 	rm -rf /data/androdeb/debian
 fi
 
