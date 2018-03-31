@@ -1,42 +1,78 @@
 #!/bin/bash -e
-set -x
 
 script_full_path=$( cd "$(dirname "$0")" ; pwd -P )
 
 source $script_full_path/utils/android
 
+usage() {
+	echo "androdeb"
+	echo "	prepare		Prepare the device (when running for the first time)"
+	echo "	shell		Enter the androdeb shell environment and get to work!"
+	echo ""
+	echo "	--tracers	Enable tracing packages (perf and trace-cmd)"
+	echo "	--compilers	Enable compilers on the FS (gcc and clang)"
+	echo "	--editors	Enable vim, emacs and git packages"
+	echo "	--scheduler	scheduler testing tools (only rt-app for now)"
+	echo "	--bcc		Build and install BCC from source"
+	echo "	--fullbuild	Enable all of the above tools"
+	echo ""
+	echo "	--kernelsrc	path-to-kernel-sources (can be used for bcc)"
+	echo "	--tempdir	use a specific temporary directory"
+	echo "	--distro	Debian distro to base on (default is buster)"
+	exit 1
+}
+
 # Set default vars
 DISTRO=buster
+PACKAGES=""
 
 # Parse command line parameters
+PKG=0; if [ $# -lt 1 ]; then usage; fi
 POSITIONAL=()
 while [[ $# -gt 0 ]]
 do
 key="$1"
 
 case $key in
-    -k|--kernelsrc)
-    KERNEL_PATH="$2"
-    shift || true # past argument
-    shift || true # past value
-    ;;
-    -t|--tempdir)
-    TMPDIR="$2"
-    shift || true # past argument
-    shift || true # past value
-    ;;
+    prepare)
+    PREP=1;     shift || true;    ;;
+    shell)
+    SHELL=1;     shift || true;     ;;
+    --tracers)
+    TRACERS=1; PKG=1;   shift || true;     ;;
+    --compilers)
+    COMPILERS=1; PKG=1     shift || true;     ;;
+    --editors)
+    EDITORS=1; PKG=1    shift || true;     ;;
+    --scheduler)
+    SCHEDULER=1; PKG=1    shift || true;     ;;
+    --fullbuild)
+    FULLBUILD=1; PKG=1    shift || true;     ;;
+    --bcc)
+    BCC=1; PKG=1    shift || true;     ;;
+    --kernelsrc)
+    KERNELSRC="$2";     shift || true;     shift || true;     ;;
+    --tempdir)
+    TMPDIR="$2";     shift || true;     shift || true;     ;;
     *)    # unknown option
-    POSITIONAL+=("$1") # save it in an array for later
-    shift || true # past argument
+    echo "Unknown option ($1)"; usage
     ;;
 esac
 done
 
 set -- "${POSITIONAL[@]}" # restore positional parameters
 
+if [[ ! -z ${PREP+x} ]] && [[ $PKG -eq 0 ]]; then;
+	echo "Need to specifify something to prepare"; usage; fi
+
+##########################################################
+#  PREPARE
+##########################################################
 # Where do we want to store temporary files
 if [[ -z ${TMPDIR+x} ]]  || [[ ! -d "${TMPDIR}" ]]; then
-	TMPDIR=`mktemp`
-fi
+	TMPDIR=`mktemp`; fi
 
-
+echo $KERNELSRC
+echo $BCC
+echo $COMPILERS
+echo $TRACERS
