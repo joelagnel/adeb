@@ -25,7 +25,7 @@ usage() {
 }
 
 # Set default vars
-DISTRO=buster;      PACKAGES="bash";	ARCH=arm64
+DISTRO=buster;      PACKAGES=$'bash\n';	ARCH=arm64
 
 # Parse command line parameters
 if [ $# -lt 1 ]; then usage; fi; POSITIONAL=()
@@ -87,7 +87,13 @@ rm -rf $OUT_TMP/usr/share/man/*
 rm -rf $OUT_TMP/usr/lib/share/man/*
 
 echo "Compressing new filesystem to prepare to push to Android /data/androdeb/"
-tar -zcf $OUT_TMP/deb.tar.gz -C $OUT_TMP debian
+tar -zcf $TMPDIR/deb.tar.gz -C $TMPDIR debian
+
+# Push tar to device and start unpack
+adb shell mkdir -p /data/androdeb/
+adb push $TMPDIR/deb.tar.gz /data/androdeb/
+adb push $spath/addons/device-* /data/androdeb/
+adb shell /data/androdeb/device-unpack
 
 # rm -rf $OUT_TMP; if [ $MKTEMP -eq 1 ]; then rm -rf $TMPDIR; fi
 

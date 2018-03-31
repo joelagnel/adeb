@@ -1,4 +1,5 @@
 #!/system/bin/sh
+
 function die() {
 	exit_code=$1
 	msg=$2
@@ -30,5 +31,6 @@ fi
 
 mkdir -p /data/androdeb/
 tar -zxf /data/deb.tar.gz -C /data/androdeb/ || die 2 "Couldn't unpack due to tar -x errors"
+rm /data/deb.tar.gz
 
 echo "Unpack of rootfs successful! Go forth and hack."
