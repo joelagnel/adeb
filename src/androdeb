@@ -1,14 +1,13 @@
 #!/bin/bash -e
+spath=$( cd "$(dirname "$0")" ; pwd -P )
 
-script_full_path=$( cd "$(dirname "$0")" ; pwd -P )
-
-source $script_full_path/utils/android
+source $spath/utils/android
 
 usage() {
 	echo "androdeb"
-	echo "	prepare		Prepare the device (when running for the first time)"
 	echo "	shell		Enter the androdeb shell environment and get to work!"
 	echo ""
+	echo "	prepare		Prepare the device (when running for the first time)"
 	echo "	--tracers	Enable tracing packages (perf and trace-cmd)"
 	echo "	--compilers	Enable compilers on the FS (gcc and clang)"
 	echo "	--editors	Enable vim, emacs and git packages"
@@ -23,47 +22,29 @@ usage() {
 }
 
 # Set default vars
-DISTRO=buster
-PACKAGES=""
+DISTRO=buster;      PACKAGES=""
 
 # Parse command line parameters
-PKG=0; if [ $# -lt 1 ]; then usage; fi
-POSITIONAL=()
-while [[ $# -gt 0 ]]
-do
-key="$1"
-
+if [ $# -lt 1 ]; then usage; fi; POSITIONAL=()
+while [[ $# -gt 0 ]]; do; key="$1"
 case $key in
-    prepare)
-    PREP=1;     shift || true;    ;;
-    shell)
-    SHELL=1;     shift || true;     ;;
-    --tracers)
-    TRACERS=1; PKG=1;   shift || true;     ;;
-    --compilers)
-    COMPILERS=1; PKG=1     shift || true;     ;;
-    --editors)
-    EDITORS=1; PKG=1    shift || true;     ;;
-    --scheduler)
-    SCHEDULER=1; PKG=1    shift || true;     ;;
-    --fullbuild)
-    FULLBUILD=1; PKG=1    shift || true;     ;;
-    --bcc)
-    BCC=1; PKG=1    shift || true;     ;;
-    --kernelsrc)
-    KERNELSRC="$2";     shift || true;     shift || true;     ;;
-    --tempdir)
-    TMPDIR="$2";     shift || true;     shift || true;     ;;
-    *)    # unknown option
-    echo "Unknown option ($1)"; usage
-    ;;
+    prepare) PREP=1;     shift || true;    ;;
+    shell) SHELL=1;     shift || true;     ;;
+    --tracers) TRACERS=1; source $spath/packages/tracers; shift || true; ;;
+    --compilers) COMPILERS=1; source $spath/packages/compilers; shift || true; ;;
+    --editors) EDITORS=1; source $spath/packages/editors; shift || true; ;;
+    --scheduler) SCHEDULER=1; source $spath/packages/scheduler; shift || true; ;;
+    --fullbuild) FULLBUILD=1; for f in $(ls $spath/packages); do source packages/$f; done; shift || true; ;;
+    --bcc)    BCC=1; shift || true;     ;;
+    --kernelsrc) KERNELSRC="$2"; shift || true;     shift || true;     ;;
+    --tempdir) TMPDIR="$2"; shift || true;     shift || true;     ;;
+    *) echo "Unknown option ($1)"; usage; ;;
 esac
 done
 
-set -- "${POSITIONAL[@]}" # restore positional parameters
-
-if [[ ! -z ${PREP+x} ]] && [[ $PKG -eq 0 ]]; then;
-	echo "Need to specifify something to prepare"; usage; fi
+if [[ ! -z ${PREP+x} ]] && [[ "x$PACKAGES" == "x" ]]; then
+	echo "Need to specifify something to prepare"; usage;
+fi
 
 ##########################################################
 #  PREPARE
@@ -72,7 +53,4 @@ if [[ ! -z ${PREP+x} ]] && [[ $PKG -eq 0 ]]; then;
 if [[ -z ${TMPDIR+x} ]]  || [[ ! -d "${TMPDIR}" ]]; then
 	TMPDIR=`mktemp`; fi
 
-echo $KERNELSRC
-echo $BCC
-echo $COMPILERS
-echo $TRACERS
+echo $PACKAGES

@@ -1,0 +1,5 @@
+PACKAGES+="\
+perf
+trace-cmd
+strace
+"
