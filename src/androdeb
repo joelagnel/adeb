@@ -25,7 +25,7 @@ usage() {
 }
 
 # Set default vars
-DISTRO=buster;      PACKAGES="";	ARCH=arm64
+DISTRO=buster;      PACKAGES="bash";	ARCH=arm64
 
 # Parse command line parameters
 if [ $# -lt 1 ]; then usage; fi; POSITIONAL=()
@@ -50,7 +50,7 @@ if [[ ! -z ${PREP+x} ]] && [[ "x$PACKAGES" == "x" ]]; then
 fi
 
 ##########################################################
-#  PREPARE
+#  PREPARE                                               #
 ##########################################################
 # Where do we want to store temporary files
 MKTEMP=0; if [[ -z ${TMPDIR+x} ]]  || [[ ! -d "${TMPDIR}" ]]; then
@@ -64,7 +64,30 @@ echo "Using temporary directory: $OUT_TMP"
 time qemu-debootstrap --arch arm64 --include=$(make_csv "$PACKAGES") \
 	--variant=minbase $DISTRO $OUT_TMP http://deb.debian.org/debian/
 
+# Some reason debootstrap leaves these founded
+umount $OUT_TMP/proc/sys/fs/binfmt_misc
+umount $OUT_TMP/proc
+
+# Make bash the default shell
+chroot $OUT_TMP rm /bin/sh || true
+chroot $OUT_TMP ln -s /bin/bash /bin/sh || true
 cp $spath/addons/bashrc $OUT_TMP/.bashrc
+
+# Cleanup
+rm -rf $OUT_TMP/lib/udev/*
+rm -rf $OUT_TMP/var/lib/apt/lists/*
+rm -rf $OUT_TMP/var/cache/apt/archives/*deb
+rm -rf $OUT_TMP/usr/share/locale/*
+rm -rf $OUT_TMP/usr/lib/share/locale/*
+rm -rf $OUT_TMP/usr/share/doc/*
+rm -rf $OUT_TMP/usr/lib/share/doc/*
+rm -rf $OUT_TMP/usr/share/ieee-data/*
+rm -rf $OUT_TMP/usr/lib/share/ieee-data/*
+rm -rf $OUT_TMP/usr/share/man/*
+rm -rf $OUT_TMP/usr/lib/share/man/*
+
+echo "Compressing new filesystem to prepare to push to Android /data/androdeb/"
+tar -zcf $OUT_TMP/deb.tar.gz -C $OUT_TMP debian
 
 # rm -rf $OUT_TMP; if [ $MKTEMP -eq 1 ]; then rm -rf $TMPDIR; fi
 
