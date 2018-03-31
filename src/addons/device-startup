@@ -1,0 +1,8 @@
+#!/system/bin/sh
+# This script looks for /data/androdeb/deb.tar.gz and unpacks it
+# into debian, also tries to shut down any open chroots and clean up.
+
+cd /data/
+rm -rf debian
+tar -xf debian.tar.gz
+rm debian.tar.gz

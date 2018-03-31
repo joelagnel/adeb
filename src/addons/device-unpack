@@ -1,0 +1,34 @@
+#!/system/bin/sh
+function die() {
+	exit_code=$1
+	msg=$2
+	echo "ERROR: $msg (code $exit_code)"
+	exit $exit_code
+}
+	
+set -e
+
+# Script to do unpack of rootfs, ensures proper tear down
+# of existing environment. Expects debian rootfs in
+# /data/deb.tar.gz which it will delete after successful
+# unpack of rootfs.
+
+spath=$( cd "$(dirname "$0")" ; pwd -P )
+
+if [ ! -f /data/deb.tar.gz ]; then
+	echo "Debian rootfs tar doesn't existing at /data/deb.tar.gz"
+	echo "Run androdeb with device connected first"
+	exit 1
+fi
+
+if [ -d /data/androdeb/debian ]; then
+	echo "androdeb environment already exists, doing a tear down"
+	# TODO: run env tear down script first
+	rm -rf /data/androdeb/debian
+fi
+
+
+mkdir -p /data/androdeb/
+tar -zxf /data/deb.tar.gz -C /data/androdeb/ || die 2 "Couldn't unpack due to tar -x errors"
+
+echo "Unpack of rootfs successful! Go forth and hack."

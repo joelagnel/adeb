@@ -1,0 +1,4 @@
+#!/system/bin/sh
+
+spath=$( cd "$(dirname "$0")" ; pwd -P )
+
