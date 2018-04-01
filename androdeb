@@ -18,8 +18,8 @@ usage() {
 	echo "	--kernelsrc	Extract kernel headers for BCC from here"
 	echo "                  (use if BCC couldn't find headers on device)"
 	echo ""
-	echo "	--tempdir	use a specific temporary directory"
-	echo "  --outdir	incase artifacts are to be stored on the host (not usual)"
+	echo "	--tempdir	Use a specific temporary directory for build operation"
+	echo "  --buildtar	Local directory to store tarball of androdeb env from device"
 	echo "	--distro	Debian distro to base on (default is buster)"
 	exit 1
 }
@@ -41,16 +41,15 @@ case $key in
     --bcc) source $spath/packages/bcc; INSTALL_BCC=1; shift || true;     ;;
     --kernelsrc) KERNELSRC="$2"; shift || true;     shift || true;     ;;
     --tempdir) TDIR="$2"; shift || true;     shift || true;     ;;
-    --outdir) ODIR="$2"; shift || true;     shift || true;     ;;
+    --buildtar) TARDIR="$2"; shift || true;     shift || true;     ;;
     *) echo "Unknown option ($1)"; usage; ;;
 esac
 done
 
 if [[ ! -z ${PREP+x} ]] && [[ "x$PACKAGES" == "x" ]]; then
-	echo "Need to specifify something to prepare"; usage;
-fi
+	echo "Need to specifify something to prepare"; usage; fi
 
-if [[ ! -z ${ODIR+x} ]] && [[ ! -d $ODIR ]]; then die 7 "Out dir specified doesn't exist"; fi
+if [[ ! -z ${TARDIR+x} ]] && [[ ! -d $TARDIR ]]; then die 7 "Tar dir specified doesn't exist"; fi
 
 PACKAGES+="\
 bash
@@ -140,8 +139,7 @@ rm -rf $OUT_TMP/usr/lib/share/man/*
 # Clone BCC if needed
 if [[ ! -z ${INSTALL_BCC+x} ]]; then
 git clone https://github.com/iovisor/bcc.git $TDIR/debian/bcc-master
-cp $spath/bcc/build-bcc.sh $TDIR/debian/bcc-master/
-fi
+cp $spath/bcc/build-bcc.sh $TDIR/debian/bcc-master/; fi
 
 echo "Compressing new filesystem to prepare to push to Android /data/androdeb/"
 tar -zcf $TDIR/deb.tar.gz -C $TDIR debian
@@ -154,10 +152,15 @@ adb shell /data/androdeb/device-unpack
 
 # Build BCC and install bcc on device if needed
 if [[ ! -z ${INSTALL_BCC+x} ]]; then
-adb shell /data/androdeb/run-command /bcc-master/build-bcc.sh
-fi
+adb shell /data/androdeb/run-command /bcc-master/build-bcc.sh; fi
 
 rm -rf $TDIR/*; if [ $MKTEMP -eq 1 ]; then rm -rf $TDIR; fi
+
+# Extract a tar of the built, compiled and installed androdeb env
+if [[ ! -z ${TARDIR+x} ]]; then
+	echo "Creating and pulling tarball of androdeb env from device"
+	adb shell /data/androdeb/build-debian-tar
+	adb pull /data/androdeb/deb.tgz $TARDIR/; fi
 
 # Use --foreign and --variant=minbase to build minimal deb first stage
 # Use fakeroot tar to build tar with root files
