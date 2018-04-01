@@ -35,7 +35,7 @@ case $key in
     --editors) source $spath/packages/editors; shift || true; ;;
     --scheduler) source $spath/packages/scheduler; shift || true; ;;
     --fullbuild) for f in $(ls $spath/packages); do source packages/$f; done; shift || true; ;;
-    --bcc) source $spath/packages/bcc; BCC=1; shift || true;     ;;
+    --bcc) source $spath/packages/bcc; INSTALL_BCC=1; shift || true;     ;;
     --kernelsrc) KERNELSRC="$2"; shift || true;     shift || true;     ;;
     --tempdir) TDIR="$2"; shift || true;     shift || true;     ;;
     *) echo "Unknown option ($1)"; usage; ;;
@@ -45,7 +45,10 @@ done
 if [[ ! -z ${PREP+x} ]] && [[ "x$PACKAGES" == "x" ]]; then
 	echo "Need to specifify something to prepare"; usage;
 fi
-PACKAGES+=$'bash\n'
+PACKAGES+="\
+bash
+ca-certifcates
+"
 
 ##########################################################
 #  SHELL
@@ -106,6 +109,12 @@ rm -rf $OUT_TMP/usr/share/ieee-data/*
 rm -rf $OUT_TMP/usr/lib/share/ieee-data/*
 rm -rf $OUT_TMP/usr/share/man/*
 rm -rf $OUT_TMP/usr/lib/share/man/*
+
+# Clone BCC if needed
+if [[ ! -z ${INSTALL_BCC+x} ]]; then
+git clone https://github.com/iovisor/bcc.git $TDIR/debian/bcc-master
+cp $spath/bcc/build-bcc.sh $TDIR/debian/bcc-master/
+fi
 
 echo "Compressing new filesystem to prepare to push to Android /data/androdeb/"
 tar -zcf $TDIR/deb.tar.gz -C $TDIR debian
