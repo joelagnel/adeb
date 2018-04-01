@@ -12,14 +12,16 @@ usage() {
 	echo "	--compilers	Enable compilers on the FS (gcc and clang)"
 	echo "	--editors	Enable vim, emacs and git packages"
 	echo "	--scheduler	scheduler testing tools (only rt-app for now)"
+	echo ""
 	echo "	--fullbuild	Enable all of the above tools (no BCC)"
+	echo "	--archive	Use archive for root fs (overrides all other prepare options)"
 	echo ""
 	echo "	--bcc		Build and install BCC from source"
 	echo "	--kernelsrc	Extract kernel headers for BCC from here"
 	echo "                  (use if BCC couldn't find headers on device)"
 	echo ""
 	echo "	--tempdir	Use a specific temporary directory for build operation"
-	echo "  --buildtar	Local directory to store tarball of androdeb env from device"
+	echo "	--buildtar	Local directory to store tarball of androdeb env from device"
 	echo "	--distro	Debian distro to base on (default is buster)"
 	exit 1
 }
@@ -33,6 +35,7 @@ while [[ $# -gt 0 ]]; do key="$1";
 case $key in
     prepare) PREPARE=1;     shift || true;    ;;
     shell) ASHELL=1;     shift || true;     ;;
+    --archive) TARF=$2; shift || true; shift || true; ;;
     --tracers) source $spath/packages/tracers; shift || true; ;;
     --compilers) source $spath/packages/compilers; shift || true; ;;
     --editors) source $spath/packages/editors; shift || true; ;;
@@ -46,8 +49,8 @@ case $key in
 esac
 done
 
-if [[ ! -z ${PREP+x} ]] && [[ "x$PACKAGES" == "x" ]]; then
-	echo "Need to specifify something to prepare"; usage; fi
+if [ ! -z "$PREPARE" ] && [ -z "$TARF" ] && [ "x$PACKAGES" == "x" ]; then
+	echo "Need to specifify something to prepare."; usage; fi
 
 if [[ ! -z ${TARDIR+x} ]] && [[ ! -d $TARDIR ]]; then die 7 "Tar dir specified doesn't exist"; fi
 
@@ -77,9 +80,13 @@ fi
 #  PREPARE 
 ##########################################################
 # Prepare is the last command checked
-if [[ -z ${PREPARE+x} ]]; then usage; fi
+if [ -z "$PREPARE" ]; then usage; fi
 
 if [[ $EUID -ne 0 ]]; then die 6 "For prepare, this tool must run as root. Try: ./sudo androdeb prepare <args>"; fi
+
+if [ ! -z "$TARF" ]; then
+   if [ ! -f ${TARF} ]; then die 7 "archive provided doesn't exist"; fi
+fi
 
 if [[ ! -z ${INSTALL_BCC+x} ]] && [[ -z ${KERNELSRC+x} ]]; then die 4 "--kernelsrc must be provided with --bcc"; fi
 
@@ -100,6 +107,14 @@ if [ -f $TDIR_ABS/kh.tgz ]; then
 	mkdir $OUT_TMP/kernel-headers
 	tar -xvf $TDIR_ABS/kh.tgz -C $OUT_TMP/kernel-headers/
 fi
+
+if [ ! -z "$TARF" ]; then
+	echo "Using archive at $TARF for filesystem preparation"
+	adb shell mkdir -p /data/androdeb/
+	adb push $TARF /data/androdeb/
+	adb push $spath/addons/* /data/androdeb/
+	adb shell /data/androdeb/device-unpack
+else
 
 echo "Full package list: $PACKAGES"
 echo "Using temporary directory: $TDIR"
@@ -150,6 +165,9 @@ adb shell /data/androdeb/device-unpack
 # Build BCC and install bcc on device if needed
 if [[ ! -z ${INSTALL_BCC+x} ]]; then
 adb shell /data/androdeb/run-command /bcc-master/build-bcc.sh; fi
+
+
+fi  # !TARF
 
 rm -rf $TDIR/*; if [ $MKTEMP -eq 1 ]; then rm -rf $TDIR; fi
 
