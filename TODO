@@ -1,5 +1,5 @@
 - check for space on both host and target
 - check if host deps are installed (Qemu etc)
-- make possible to use external tgz (from web or local fs)
 - make update headers indep of bcc, but bcc dependent on it
+- build tar independent of prepare
 - get perf to work

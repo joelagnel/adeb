@@ -1,5 +1,7 @@
 PACKAGES+="\
 linux-perf
+linux-perf-4.9
+linux-perf-4.15
 trace-cmd
 strace
 "
