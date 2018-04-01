@@ -13,7 +13,7 @@ cd $spath
 if [ ! -d debian ]; then echo "Error: environment to tar doesn't exist"; exit 1; fi
 
 rm -rf debian-tar; cp -r debian debian-tar;
-rm -rf debian/debian-tar/; mv debian-tar debian/
-./run-command "tar -zcf deb.tgz -C debian-tar/ --exclude='./kernel-headers' ."
+rm -rf debian/debian; mv debian-tar debian/debian
+./run-command "tar -zcf deb.tgz --exclude='./kernel-headers' debian"
 mv debian/deb.tgz .
 rm -rf debian/debian-tar
