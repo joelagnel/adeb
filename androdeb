@@ -69,10 +69,7 @@ if [ ! -z ${ASHELL+x} ]; then
 	   die 2 "Device doesn't have an androdeb environment, run \"./androdeb prepare\" first";
 	fi; set -e
 
-	echo "For a better shell experience, run the following commands:"
-	echo "    adb shell"
-	echo "    /data/androdeb/run"
-	adb shell -x /data/androdeb/run
+	adb shell -t /data/androdeb/run
 	exit 0
 fi
 
