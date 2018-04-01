@@ -1,13 +1,15 @@
 export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/share/bcc/tools/
 export TMPDIR=/tmp/
 
+echo 0 > /proc/sys/kernel/kptr_restrict
+
 echo ""
 echo "########################################################"
 echo "# Welcome to androdeb environment running on Android   #"
 echo "# With great power comes great responsibility!         #"
 echo "# For questions: joel@linuxinternals.org               #"
 echo "                                                       #"
-echo " Try running vim, gcc, clang, bcc, git, make etc.      #"
+echo " Try running vim, gcc, clang, bcc, git, make, perf etc #"
 echo "   or apt-get install something.                       #"
 echo "                                                       #"
 echo " Note: For apt-get to work, you need to disable        #"

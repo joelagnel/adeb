@@ -12,10 +12,12 @@ usage() {
 	echo "	--compilers	Enable compilers on the FS (gcc and clang)"
 	echo "	--editors	Enable vim, emacs and git packages"
 	echo "	--scheduler	scheduler testing tools (only rt-app for now)"
-	echo "	--bcc		Build and install BCC from source"
-	echo "	--fullbuild	Enable all of the above tools"
+	echo "	--fullbuild	Enable all of the above tools (no BCC)"
 	echo ""
-	echo "	--kernelsrc	path-to-kernel-sources (can be used for bcc)"
+	echo "	--bcc		Build and install BCC from source"
+	echo "	--kernelsrc	Extract kernel headers for BCC from here"
+	echo "                  (use if BCC couldn't find headers on device)"
+	echo ""
 	echo "	--tempdir	use a specific temporary directory"
 	echo "	--distro	Debian distro to base on (default is buster)"
 	exit 1
@@ -34,7 +36,7 @@ case $key in
     --compilers) source $spath/packages/compilers; shift || true; ;;
     --editors) source $spath/packages/editors; shift || true; ;;
     --scheduler) source $spath/packages/scheduler; shift || true; ;;
-    --fullbuild) for f in $(ls $spath/packages); do source packages/$f; done; shift || true; ;;
+    --fullbuild) for f in $(ls $spath/packages|grep -v bcc); do source packages/$f; done; shift || true; ;;
     --bcc) source $spath/packages/bcc; INSTALL_BCC=1; shift || true;     ;;
     --kernelsrc) KERNELSRC="$2"; shift || true;     shift || true;     ;;
     --tempdir) TDIR="$2"; shift || true;     shift || true;     ;;
