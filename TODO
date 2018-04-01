@@ -1,2 +1,4 @@
 - check for space on both host and target
 - check if host deps are installed (Qemu etc)
+- make possible to use external tgz (from web or local fs)
+- update headers on device if using external tgz
