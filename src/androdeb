@@ -4,8 +4,6 @@ curdir=$( pwd -P )
 
 source $spath/utils/android
 
-if [[ $EUID -ne 0 ]]; then echo "This tool must be run as root"; exit 3; fi
-
 usage() {
 	echo "androdeb"
 	echo "	shell		Enter the androdeb shell environment and get to work!"
@@ -25,14 +23,14 @@ usage() {
 }
 
 # Set default vars
-DISTRO=buster;      PACKAGES=$'bash\n';	ARCH=arm64
+DISTRO=buster;      PACKAGES="";	ARCH=arm64
 
 # Parse command line parameters
 if [ $# -lt 1 ]; then usage; fi; POSITIONAL=()
 while [[ $# -gt 0 ]]; do key="$1";
 case $key in
     prepare) PREP=1;     shift || true;    ;;
-    shell) SHELL=1;     shift || true;     ;;
+    shell) ASHELL=1;     shift || true;     ;;
     --tracers) source $spath/packages/tracers; shift || true; ;;
     --compilers) source $spath/packages/compilers; shift || true; ;;
     --editors) source $spath/packages/editors; shift || true; ;;
@@ -40,7 +38,7 @@ case $key in
     --fullbuild) for f in $(ls $spath/packages); do source packages/$f; done; shift || true; ;;
     --bcc) source $spath/packages/bcc; BCC=1; shift || true;     ;;
     --kernelsrc) KERNELSRC="$2"; shift || true;     shift || true;     ;;
-    --tempdir) TMPDIR="$2"; shift || true;     shift || true;     ;;
+    --tempdir) TDIR="$2"; shift || true;     shift || true;     ;;
     *) echo "Unknown option ($1)"; usage; ;;
 esac
 done
@@ -48,15 +46,30 @@ done
 if [[ ! -z ${PREP+x} ]] && [[ "x$PACKAGES" == "x" ]]; then
 	echo "Need to specifify something to prepare"; usage;
 fi
+PACKAGES+=$'bash\n'
 
 ##########################################################
-#  PREPARE                                               #
+#  SHELL
 ##########################################################
+if [[ ! -z ${ASHELL+x} ]]; then
+	echo "For a better shell experience, run the following commands:"
+	echo "    adb shell"
+	echo "    /data/androdeb/run"
+	adb shell -x /data/androdeb/run
+	exit 0
+fi
+
+##########################################################
+#  PREPARE 
+##########################################################
+if [[ $EUID -ne 0 ]]; then echo "For prepare, this tool must run as root";
+echo "Try ./sudo androdeb prepare <other-args>"; exit 3; fi
+
 # Where do we want to store temporary files
-MKTEMP=0; if [[ -z ${TMPDIR+x} ]]  || [[ ! -d "${TMPDIR}" ]]; then
-	TMPDIR=`mktemp -d`; MKTEMP=1; fi
+MKTEMP=0; if [[ -z ${TDIR+x} ]]  || [[ ! -d "${TDIR}" ]]; then
+	TDIR=`mktemp -d`; MKTEMP=1; fi
 
-OUT_TMP=$TMPDIR/debian; rm -rf $OUT_TMP; mkdir -p $OUT_TMP
+OUT_TMP=$TDIR/debian; rm -rf $OUT_TMP; mkdir -p $OUT_TMP
 
 echo "Full package list: $PACKAGES"
 echo "Using temporary directory: $OUT_TMP"
@@ -91,15 +104,15 @@ rm -rf $OUT_TMP/usr/share/man/*
 rm -rf $OUT_TMP/usr/lib/share/man/*
 
 echo "Compressing new filesystem to prepare to push to Android /data/androdeb/"
-tar -zcf $TMPDIR/deb.tar.gz -C $TMPDIR debian
+tar -zcf $TDIR/deb.tar.gz -C $TDIR debian
 
 # Push tar to device and start unpack
 adb shell mkdir -p /data/androdeb/
-adb push $TMPDIR/deb.tar.gz /data/androdeb/
+adb push $TDIR/deb.tar.gz /data/androdeb/
 adb push $spath/addons/device-* /data/androdeb/
 adb shell /data/androdeb/device-unpack
 
-# rm -rf $OUT_TMP; if [ $MKTEMP -eq 1 ]; then rm -rf $TMPDIR; fi
+# rm -rf $OUT_TMP; if [ $MKTEMP -eq 1 ]; then rm -rf $TDIR; fi
 
 # Use --foreign and --variant=minbase to build minimal deb first stage
 # Use fakeroot tar to build tar with root files

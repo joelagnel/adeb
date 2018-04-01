@@ -4,7 +4,7 @@ export TMPDIR=/tmp/
 echo ""
 echo "########################################################"
 echo "# Welcome to androdeb environment running on Android   #"
-echo "# With great power comes great responibility!          #"
+echo "# With great power comes great responsibility!         #"
 echo "# For questions: joel@linuxinternals.org               #"
 echo "########################################################"
 echo ""
