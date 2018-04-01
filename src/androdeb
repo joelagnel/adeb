@@ -1,7 +1,6 @@
 #!/bin/bash -e
 spath=$( cd "$(dirname "$0")" ; pwd -P )
 curdir=$( pwd -P )
-
 source $spath/utils/android
 
 usage() {
@@ -52,6 +51,11 @@ PACKAGES+=$'bash\n'
 #  SHELL
 ##########################################################
 if [[ ! -z ${ASHELL+x} ]]; then
+	set +e; adb shell ls /data/androdeb/debian/.bashrc > /dev/null 2>&1
+	if [ $? -ne 0 ]; then
+	   die 2 "Device doesn't have an androdeb environment, run \"./androdeb prepare\" first";
+	fi; set -e
+
 	echo "For a better shell experience, run the following commands:"
 	echo "    adb shell"
 	echo "    /data/androdeb/run"

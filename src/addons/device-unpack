@@ -1,12 +1,5 @@
 #!/system/bin/sh
 
-function die() {
-	exit_code=$1
-	msg=$2
-	echo "ERROR: $msg (code $exit_code)"
-	exit $exit_code
-}
-	
 set -e
 
 # Script to do unpack of rootfs, ensures proper tear down

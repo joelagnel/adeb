@@ -36,3 +36,10 @@ do_adb_root() {
 	adb root
 	return $?
 }
+
+die() {
+	exit_code=$1
+	msg=$2
+	echo "ERROR: $msg (code $exit_code)"
+	exit $exit_code
+}
