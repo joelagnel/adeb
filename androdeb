@@ -1,34 +1,10 @@
 #!/bin/bash -e
-VERSION=0.9
+VERSION=v0.9
 
 spath=$( cd "$(dirname "$0")" ; pwd -P )
 curdir=$( pwd -P )
 source $spath/utils/android
-
-usage() {
-	echo "androdeb"
-	echo "	shell		Enter the androdeb shell environment and get to work!"
-	echo ""
-	echo "	prepare		Prepare the device (when running for the first time)"
-	echo "	--tracers	Enable tracing packages (perf and trace-cmd)"
-	echo "	--compilers	Enable compilers on the FS (gcc and clang)"
-	echo "	--editors	Enable vim, emacs and git packages"
-	echo "	--scheduler	scheduler testing tools (only rt-app for now)"
-	echo ""
-	echo "	--fullbuild	Enable all of the above tools (no BCC)"
-	echo ""
-	echo "  --download	Download full FS archive from web (overrides all tools specified)"
-	echo "	--archive	Use archive for root fs (overrides all other prepare options)"
-	echo ""
-	echo "	--bcc		Build and install BCC from source"
-	echo "	--kernelsrc	Extract kernel headers for BCC from here"
-	echo "                  (use if BCC couldn't find headers on device)"
-	echo ""
-	echo "	--tempdir	Use a specific temporary directory for build operation"
-	echo "	--buildtar	Local directory to store tarball of androdeb env from device"
-	echo "	--distro	Debian distro to base on (default is buster)"
-	exit 1
-}
+source $spath/utils/banners
 
 # Set default vars
 DISTRO=buster;      PACKAGES="";	ARCH=arm64
@@ -50,6 +26,7 @@ case $key in
     --kernelsrc) KERNELSRC="$2"; shift || true;     shift || true;     ;;
     --tempdir) TDIR="$2"; shift || true;     shift || true;     ;;
     --buildtar) TARDIR="$2"; shift || true;     shift || true;     ;;
+    --debug) set -x; shift || true; ;;
     *) echo "Unknown option ($1)"; usage; ;;
 esac
 done
@@ -98,6 +75,8 @@ if [[ ! -z ${INSTALL_BCC+x} ]] && [[ -z ${KERNELSRC+x} ]]; then die 4 "--kernels
 
 if [[ ! -z ${KERNELSRC+x} ]] && [[ ! -d ${KERNELSRC} ]]; then die 5 "Kernel source directory provided doesn't exist"; fi
 
+print_prepare_banner
+
 # Where do we want to store temporary files
 MKTEMP=0; if [[ -z ${TDIR+x} ]]  || [[ ! -d "${TDIR}" ]]; then
 	TDIR=`mktemp -d`; MKTEMP=1; fi
@@ -105,6 +84,7 @@ rm -rf $TDIR/*
 TDIR_ABS=$( cd "$TDIR" ; pwd -P )
 
 if [ ! -z "$DOWNLOAD" ]; then
+   echo "Downloading Androdeb from the web..."; echo ""
    curl -L https://github.com/joelagnel/androdeb/releases/download/$VERSION/androdeb-fs.tgz --output $TDIR_ABS/androdeb-fs.tgz;
    TARF=$TDIR_ABS/androdeb-fs.tgz; fi
 

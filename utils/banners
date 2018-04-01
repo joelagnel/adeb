@@ -1,0 +1,33 @@
+#!/bin/bash -x
+
+print_prepare_banner() {
+	echo "Preparing device..."
+	echo ""
+
+usage() {
+	echo "androdeb"
+	echo "	shell		Enter the androdeb shell environment and get to work!"
+	echo ""
+	echo "	prepare		Prepare the device (when running for the first time)"
+	echo "	--tracers	Enable tracing packages (perf and trace-cmd)"
+	echo "	--compilers	Enable compilers on the FS (gcc and clang)"
+	echo "	--editors	Enable vim, emacs and git packages"
+	echo "	--scheduler	scheduler testing tools (only rt-app for now)"
+	echo ""
+	echo "	--fullbuild	Enable all of the above tools (no BCC)"
+	echo ""
+	echo "  --download	Download full FS archive from web (overrides all tools specified)"
+	echo "	--archive	Use archive for root fs (overrides all other prepare options)"
+	echo ""
+	echo "	--bcc		Build and install BCC from source"
+	echo "	--kernelsrc	Extract kernel headers for BCC from here"
+	echo "                  (use if BCC couldn't find headers on device)"
+	echo ""
+	echo "	--tempdir	Use a specific temporary directory for build operation"
+	echo "	--buildtar	Local directory to store tarball of androdeb env from device"
+	echo "	--distro	Debian distro to base on (default is buster)"
+	echo "  --debug"
+	exit 1
+}
+
+
