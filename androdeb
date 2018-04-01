@@ -19,6 +19,7 @@ usage() {
 	echo "                  (use if BCC couldn't find headers on device)"
 	echo ""
 	echo "	--tempdir	use a specific temporary directory"
+	echo "  --outdir	incase artifacts are to be stored on the host (not usual)"
 	echo "	--distro	Debian distro to base on (default is buster)"
 	exit 1
 }
