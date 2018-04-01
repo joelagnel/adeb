@@ -89,10 +89,15 @@ if [[ ! -z ${KERNELSRC} ]] && [[ ! -d ${KERNELSRC} ]]; then die 5 "Kernel source
 MKTEMP=0; if [[ -z ${TDIR+x} ]]  || [[ ! -d "${TDIR}" ]]; then
 	TDIR=`mktemp -d`; MKTEMP=1; fi
 
+# Package kernel headers
+if [[ ! -z ${INSTALL_BCC} ]] && [[ ! -z ${KERNELSRC} ]]; then
+TDIR_ABS=$( cd "$TDIR" ; pwd -P )
+$spath/bcc/build-kheaders-targz.sh ${KERNELSRC} $TDIR_ABS/kh.tgz || die 6 "Failed to package kernel headers"; fi
+
 OUT_TMP=$TDIR/debian; rm -rf $OUT_TMP; mkdir -p $OUT_TMP
 
 echo "Full package list: $PACKAGES"
-echo "Using temporary directory: $OUT_TMP"
+echo "Using temporary directory: $TDIR"
 
 time qemu-debootstrap --arch arm64 --include=$(make_csv "$PACKAGES") \
 	$DISTRO $OUT_TMP http://deb.debian.org/debian/
@@ -137,8 +142,6 @@ adb shell mkdir -p /data/androdeb/
 adb push $TDIR/deb.tar.gz /data/androdeb/
 adb push $spath/addons/device-* /data/androdeb/
 adb shell /data/androdeb/device-unpack
-
-build-kheaders-targz.sh
 
 # Build BCC and install bcc on device if needed
 if [[ ! -z ${INSTALL_BCC+x} ]]; then
