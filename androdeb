@@ -112,9 +112,9 @@ echo "Using temporary directory: $TDIR"
 time qemu-debootstrap --arch arm64 --include=$(make_csv "$PACKAGES") \
 	$DISTRO $OUT_TMP http://deb.debian.org/debian/
 
-# Some reason debootstrap leaves these founded
-umount $OUT_TMP/proc/sys/fs/binfmt_misc
-umount $OUT_TMP/proc
+# Some reason debootstrap leaves these mounted
+umount $OUT_TMP/proc/sys/fs/binfmt_misc || true
+umount $OUT_TMP/proc || true
 
 # Make bash the default shell
 chroot $OUT_TMP rm /bin/sh || true
