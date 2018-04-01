@@ -1,0 +1,2 @@
+- check for space on both host and target
+- check if host deps are installed (Qemu etc)
