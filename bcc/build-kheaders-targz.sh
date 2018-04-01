@@ -16,11 +16,11 @@ if [ ! -d "$KERNEL_PATH" ]; then
         exit 3
 fi
 
-kdir=$(basename $KERNEL_PATH)
+# kdir=$(basename $KERNEL_PATH)
 
-cd $KERNEL_PATH/..
-find $kdir/arch -name include -type d -print | xargs -n1 -i: find : -type f > /tmp/kernel-headers.h
-find $kdir/include >> /tmp/kernel-headers.h
+cd $KERNEL_PATH
+find arch -name include -type d -print | xargs -n1 -i: find : -type f > /tmp/kernel-headers.h
+find include >> /tmp/kernel-headers.h
 
 grep "include/generated/autoconf.h" /tmp/kernel-headers.h > /dev/null 2>&1
 retgrep=$?
@@ -34,4 +34,4 @@ if [ $retgrep -ne 0 ]; then
 fi
 
 cat /tmp/kernel-headers.h | tar -zcf $OUT_TAR -T -
-# rm /tmp/kernel-headers.h
+rm /tmp/kernel-headers.h

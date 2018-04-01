@@ -50,7 +50,7 @@ fi
 
 PACKAGES+="\
 bash
-ca-certifcates
+ca-certificates
 "
 
 do_adb_root || die 3 "adb root failed, make sure:
@@ -60,7 +60,7 @@ do_adb_root || die 3 "adb root failed, make sure:
 ##########################################################
 #  SHELL
 ##########################################################
-if [[ ! -z ${ASHELL+x} ]]; then
+if [ ! -z ${ASHELL+x} ]; then
 	set +e; adb shell ls /data/androdeb/debian/.bashrc > /dev/null 2>&1
 	if [ $? -ne 0 ]; then
 	   die 2 "Device doesn't have an androdeb environment, run \"./androdeb prepare\" first";
@@ -81,20 +81,25 @@ if [[ ! -z ${PREPARE+x} ]]; then usage; fi
 
 if [[ $EUID -ne 0 ]]; then die 6 "For prepare, this tool must run as root. Try: ./sudo androdeb prepare <args>"; fi
 
-if [[ ! -z ${INSTALL_BCC} ]] && [[ -z ${KERNELSRC} ]]; then die 4 "--kernelsrc must be provided with --bcc"; fi
+if [[ ! -z ${INSTALL_BCC+x} ]] && [[ -z ${KERNELSRC+x} ]]; then die 4 "--kernelsrc must be provided with --bcc"; fi
 
-if [[ ! -z ${KERNELSRC} ]] && [[ ! -d ${KERNELSRC} ]]; then die 5 "Kernel source directory doesn't exist"; fi
+if [[ ! -z ${KERNELSRC+x} ]] && [[ ! -d ${KERNELSRC} ]]; then die 5 "Kernel source directory provided doesn't exist"; fi
 
 # Where do we want to store temporary files
 MKTEMP=0; if [[ -z ${TDIR+x} ]]  || [[ ! -d "${TDIR}" ]]; then
 	TDIR=`mktemp -d`; MKTEMP=1; fi
+rm -rf $TDIR/*
+TDIR_ABS=$( cd "$TDIR" ; pwd -P )
 
 # Package kernel headers
 if [[ ! -z ${INSTALL_BCC} ]] && [[ ! -z ${KERNELSRC} ]]; then
-TDIR_ABS=$( cd "$TDIR" ; pwd -P )
 $spath/bcc/build-kheaders-targz.sh ${KERNELSRC} $TDIR_ABS/kh.tgz || die 6 "Failed to package kernel headers"; fi
 
 OUT_TMP=$TDIR/debian; rm -rf $OUT_TMP; mkdir -p $OUT_TMP
+if [ -f $TDIR_ABS/kh.tgz ]; then
+	mkdir $OUT_TMP/kernel-headers
+	tar -xvf $TDIR_ABS/kh.tgz -C $OUT_TMP/kernel-headers/
+fi
 
 echo "Full package list: $PACKAGES"
 echo "Using temporary directory: $TDIR"
@@ -140,7 +145,7 @@ tar -zcf $TDIR/deb.tar.gz -C $TDIR debian
 # Push tar to device and start unpack
 adb shell mkdir -p /data/androdeb/
 adb push $TDIR/deb.tar.gz /data/androdeb/
-adb push $spath/addons/device-* /data/androdeb/
+adb push $spath/addons/* /data/androdeb/
 adb shell /data/androdeb/device-unpack
 
 # Build BCC and install bcc on device if needed
@@ -148,6 +153,7 @@ if [[ ! -z ${INSTALL_BCC+x} ]]; then
 adb shell /data/androdeb/run-command /bcc-master/build-bcc.sh
 fi
 
-# rm -rf $OUT_TMP; if [ $MKTEMP -eq 1 ]; then rm -rf $TDIR; fi
+rm -rf $TDIR/*; if [ $MKTEMP -eq 1 ]; then rm -rf $TDIR; fi
+
 # Use --foreign and --variant=minbase to build minimal deb first stage
 # Use fakeroot tar to build tar with root files

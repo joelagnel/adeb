@@ -16,3 +16,5 @@ echo " Note: For apt-get to work, you need to disable        #"
 echo " CONFIG_ANDROID_PARANOID_NETWORK and rebuild kernel.   #"
 echo "########################################################"
 echo ""
+
+if [ -d /kernel-headers/ ]; then export BCC_KERNEL_SOURCE=/kernel-headers/; fi
