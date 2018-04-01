@@ -111,7 +111,7 @@ fi
 if [ ! -z "$TARF" ]; then
 	echo "Using archive at $TARF for filesystem preparation"
 	adb shell mkdir -p /data/androdeb/
-	adb push $TARF /data/androdeb/
+	adb push $TARF /data/androdeb/deb.tar.gz
 	adb push $spath/addons/* /data/androdeb/
 	adb shell /data/androdeb/device-unpack
 else
