@@ -41,6 +41,7 @@ case $key in
     --bcc) source $spath/packages/bcc; INSTALL_BCC=1; shift || true;     ;;
     --kernelsrc) KERNELSRC="$2"; shift || true;     shift || true;     ;;
     --tempdir) TDIR="$2"; shift || true;     shift || true;     ;;
+    --outdir) ODIR="$2"; shift || true;     shift || true;     ;;
     *) echo "Unknown option ($1)"; usage; ;;
 esac
 done
@@ -48,6 +49,8 @@ done
 if [[ ! -z ${PREP+x} ]] && [[ "x$PACKAGES" == "x" ]]; then
 	echo "Need to specifify something to prepare"; usage;
 fi
+
+if [[ ! -z ${ODIR+x} ]] && [[ ! -d $ODIR ]]; then die 7 "Out dir specified doesn't exist"; fi
 
 PACKAGES+="\
 bash

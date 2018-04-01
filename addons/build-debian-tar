@@ -1,0 +1,19 @@
+#!/bin/sh
+set -e
+# Build a tarball out of a android environment which I can then
+# upload to places for people who want to expedite the install
+
+# This script runs on the device
+
+spath=$( cd "$(dirname "$0")" ; pwd -P )
+cd $spath
+
+./device-umount-all
+
+if [ ! -d debian ]; then echo "Error: environment to tar doesn't exist"; exit 1; fi
+
+rm -rf debian-tar; cp -r debian debian-tar;
+rm -rf debian/debian-tar/; mv debian-tar debian/
+./run-command "tar -zcf deb.tgz -C debian-tar/ --exclude='./kernel-headers' ."
+mv debian/deb.tgz .
+rm -rf debian/debian-tar
