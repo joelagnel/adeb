@@ -166,7 +166,7 @@ if [[ ! -z ${TARDIR+x} ]]; then
 	echo "Creating and pulling tarball of androdeb env from device"
 	adb shell /data/androdeb/build-debian-tar
 	adb pull /data/androdeb/androdeb-fs.tgz $TARDIR/
-	adb shell rm /data/androdeb/deb.tgz; fi
+	adb shell rm /data/androdeb/androdeb-fs.tgz; fi
 
 # Use --foreign and --variant=minbase to build minimal deb first stage
 # Use fakeroot tar to build tar with root files
