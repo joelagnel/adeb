@@ -31,7 +31,7 @@ DISTRO=buster;      PACKAGES="";	ARCH=arm64
 if [ $# -lt 1 ]; then usage; fi; POSITIONAL=()
 while [[ $# -gt 0 ]]; do key="$1";
 case $key in
-    prepare) PREP=1;     shift || true;    ;;
+    prepare) PREPARE=1;     shift || true;    ;;
     shell) ASHELL=1;     shift || true;     ;;
     --tracers) source $spath/packages/tracers; shift || true; ;;
     --compilers) source $spath/packages/compilers; shift || true; ;;
@@ -80,7 +80,7 @@ fi
 #  PREPARE 
 ##########################################################
 # Prepare is the last command checked
-if [[ ! -z ${PREPARE+x} ]]; then usage; fi
+if [[ -z ${PREPARE+x} ]]; then usage; fi
 
 if [[ $EUID -ne 0 ]]; then die 6 "For prepare, this tool must run as root. Try: ./sudo androdeb prepare <args>"; fi
 
