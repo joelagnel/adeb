@@ -42,6 +42,10 @@ case $key in
 esac
 done
 
+do_adb_root || die 3 "adb root failed, make sure:
+- device is connected, and there's only one device (TODO: add multi device support)
+- device is userdebug."
+
 if [[ ! -z ${PREP+x} ]] && [[ "x$PACKAGES" == "x" ]]; then
 	echo "Need to specifify something to prepare"; usage;
 fi
@@ -125,7 +129,11 @@ adb push $TDIR/deb.tar.gz /data/androdeb/
 adb push $spath/addons/device-* /data/androdeb/
 adb shell /data/androdeb/device-unpack
 
-# rm -rf $OUT_TMP; if [ $MKTEMP -eq 1 ]; then rm -rf $TDIR; fi
+# Build BCC and install bcc on device if needed
+if [[ ! -z ${INSTALL_BCC+x} ]]; then
+adb shell /data/androdeb/run-command /bcc-master/build-bcc.sh
+fi
 
+# rm -rf $OUT_TMP; if [ $MKTEMP -eq 1 ]; then rm -rf $TDIR; fi
 # Use --foreign and --variant=minbase to build minimal deb first stage
 # Use fakeroot tar to build tar with root files
