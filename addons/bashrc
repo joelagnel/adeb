@@ -1,8 +1,6 @@
 export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/share/bcc/tools/
 export TMPDIR=/tmp/
 
-echo 0 > /proc/sys/kernel/kptr_restrict
-
 echo ""
 echo "########################################################"
 echo "# Welcome to androdeb environment running on Android   #"
@@ -16,5 +14,8 @@ echo " Note: For apt-get to work, you need to disable        #"
 echo " CONFIG_ANDROID_PARANOID_NETWORK and rebuild kernel.   #"
 echo "########################################################"
 echo ""
+
+psk=/proc/sys/kernel/kptr_restrict
+if [ -f $psk ]; then echo 0 > $psk; fi
 
 if [ -d /kernel-headers/ ]; then export BCC_KERNEL_SOURCE=/kernel-headers/; fi
