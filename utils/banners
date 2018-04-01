@@ -3,6 +3,7 @@
 print_prepare_banner() {
 	echo "Preparing device..."
 	echo ""
+}
 
 usage() {
 	echo "androdeb"

@@ -14,6 +14,6 @@ if [ ! -d debian ]; then echo "Error: environment to tar doesn't exist"; exit 1;
 
 rm -rf debian-tar; cp -r debian debian-tar;
 rm -rf debian/debian; mv debian-tar debian/debian
-./run-command "tar -zcf deb.tgz --exclude='debian/kernel-headers' debian"
-mv debian/deb.tgz .
+./run-command "tar -zcf androdeb-fs.tgz --exclude='debian/kernel-headers' debian"
+mv debian/androdeb-fs.tgz .
 rm -rf debian/debian-tar

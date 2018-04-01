@@ -165,7 +165,7 @@ rm -rf $TDIR/*; if [ $MKTEMP -eq 1 ]; then rm -rf $TDIR; fi
 if [[ ! -z ${TARDIR+x} ]]; then
 	echo "Creating and pulling tarball of androdeb env from device"
 	adb shell /data/androdeb/build-debian-tar
-	adb pull /data/androdeb/deb.tgz $TARDIR/
+	adb pull /data/androdeb/androdeb-fs.tgz $TARDIR/
 	adb shell rm /data/androdeb/deb.tgz; fi
 
 # Use --foreign and --variant=minbase to build minimal deb first stage
