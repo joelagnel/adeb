@@ -1,4 +1,8 @@
-# Create a more sane trace development environment!
-
 export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/share/bcc/tools/
 export TMPDIR=/tmp/
+
+echo "########################################################"
+echo "# Welcome to androdeb environment running on Android   #"
+echo "# With great power comes great responibility!          #"
+echo "# For questions: joel@linuxinternals.org               #"
+echo "########################################################"
