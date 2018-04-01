@@ -1,4 +1,6 @@
 #!/bin/bash -e
+VERSION=0.9
+
 spath=$( cd "$(dirname "$0")" ; pwd -P )
 curdir=$( pwd -P )
 source $spath/utils/android
@@ -14,6 +16,8 @@ usage() {
 	echo "	--scheduler	scheduler testing tools (only rt-app for now)"
 	echo ""
 	echo "	--fullbuild	Enable all of the above tools (no BCC)"
+	echo ""
+	echo "  --download	Download full FS archive from web (overrides all tools specified)"
 	echo "	--archive	Use archive for root fs (overrides all other prepare options)"
 	echo ""
 	echo "	--bcc		Build and install BCC from source"
@@ -41,6 +45,7 @@ case $key in
     --editors) source $spath/packages/editors; shift || true; ;;
     --scheduler) source $spath/packages/scheduler; shift || true; ;;
     --fullbuild) for f in $(ls $spath/packages|grep -v bcc); do source packages/$f; done; shift || true; ;;
+    --download) DOWNLOAD=1; shift || true; ;;
     --bcc) source $spath/packages/bcc; INSTALL_BCC=1; shift || true;     ;;
     --kernelsrc) KERNELSRC="$2"; shift || true;     shift || true;     ;;
     --tempdir) TDIR="$2"; shift || true;     shift || true;     ;;
@@ -49,11 +54,12 @@ case $key in
 esac
 done
 
-if [ ! -z "$PREPARE" ] && [ -z "$TARF" ] && [ "x$PACKAGES" == "x" ]; then
-	echo "Need to specifify something to prepare."; usage; fi
+if [ ! -z "$PREPARE" ] && [ -z "$DOWNLOAD" ] && [ -z "$TARF" ] && [ "x$PACKAGES" == "x" ]; then
+	echo "Need to specifify something to prepare, or try: ./andrdeb prepare --download"; usage; fi
 
 if [[ ! -z ${TARDIR+x} ]] && [[ ! -d $TARDIR ]]; then die 7 "Tar dir specified doesn't exist"; fi
 
+# Default packages
 PACKAGES+="\
 bash
 ca-certificates
@@ -84,7 +90,7 @@ if [ -z "$PREPARE" ]; then usage; fi
 
 if [[ $EUID -ne 0 ]]; then die 6 "For prepare, this tool must run as root. Try: ./sudo androdeb prepare <args>"; fi
 
-if [ ! -z "$TARF" ]; then
+if [ ! -z "$TARF" ] && [ -z "$DOWNLOAD" ]; then
    if [ ! -f ${TARF} ]; then die 7 "archive provided doesn't exist"; fi
 fi
 
@@ -97,6 +103,10 @@ MKTEMP=0; if [[ -z ${TDIR+x} ]]  || [[ ! -d "${TDIR}" ]]; then
 	TDIR=`mktemp -d`; MKTEMP=1; fi
 rm -rf $TDIR/*
 TDIR_ABS=$( cd "$TDIR" ; pwd -P )
+
+if [ ! -z "$DOWNLOAD" ]; then
+   curl -L https://github.com/joelagnel/androdeb/releases/download/$VERSION/androdeb-fs.tgz --output $TDIR_ABS/androdeb-fs.tgz;
+   TARF=$TDIR_ABS/androdeb-fs.tgz; fi
 
 # Package kernel headers
 if [[ ! -z ${INSTALL_BCC} ]] && [[ ! -z ${KERNELSRC} ]]; then
