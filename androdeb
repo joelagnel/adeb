@@ -44,17 +44,18 @@ case $key in
 esac
 done
 
-do_adb_root || die 3 "adb root failed, make sure:
-- device is connected, and there's only one device (TODO: add multi device support)
-- device is userdebug."
-
 if [[ ! -z ${PREP+x} ]] && [[ "x$PACKAGES" == "x" ]]; then
 	echo "Need to specifify something to prepare"; usage;
 fi
+
 PACKAGES+="\
 bash
 ca-certifcates
 "
+
+do_adb_root || die 3 "adb root failed, make sure:
+- device is connected, and there's only one device (TODO: add multi device support)
+- device is userdebug."
 
 ##########################################################
 #  SHELL
@@ -75,8 +76,14 @@ fi
 ##########################################################
 #  PREPARE 
 ##########################################################
-if [[ $EUID -ne 0 ]]; then echo "For prepare, this tool must run as root";
-echo "Try ./sudo androdeb prepare <other-args>"; exit 3; fi
+# Prepare is the last command checked
+if [[ ! -z ${PREPARE+x} ]]; then usage; fi
+
+if [[ $EUID -ne 0 ]]; then die 6 "For prepare, this tool must run as root. Try: ./sudo androdeb prepare <args>"; fi
+
+if [[ ! -z ${INSTALL_BCC} ]] && [[ -z ${KERNELSRC} ]]; then die 4 "--kernelsrc must be provided with --bcc"; fi
+
+if [[ ! -z ${KERNELSRC} ]] && [[ ! -d ${KERNELSRC} ]]; then die 5 "Kernel source directory doesn't exist"; fi
 
 # Where do we want to store temporary files
 MKTEMP=0; if [[ -z ${TDIR+x} ]]  || [[ ! -d "${TDIR}" ]]; then
@@ -130,6 +137,8 @@ adb shell mkdir -p /data/androdeb/
 adb push $TDIR/deb.tar.gz /data/androdeb/
 adb push $spath/addons/device-* /data/androdeb/
 adb shell /data/androdeb/device-unpack
+
+build-kheaders-targz.sh
 
 # Build BCC and install bcc on device if needed
 if [[ ! -z ${INSTALL_BCC+x} ]]; then

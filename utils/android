@@ -33,13 +33,13 @@ cmd_exists() {
 }
 
 do_adb_root() {
-	adb root
+	adb root > /dev/null 2>&1
 	return $?
 }
 
 die() {
 	exit_code=$1
 	msg=$2
-	echo "ERROR: $msg (code $exit_code)"
+	echo "ERROR: $msg"
 	exit $exit_code
 }
