@@ -32,5 +32,24 @@ Host:
 A machine running recent Ubuntu or Debian, with 4GB of memory and 4GB free space.
 Host needs qemu-debootstrap package installed. Run `apt-get install qemu-debootstrap`.
 
+Quick Start Instructions
+------------------------
+* Clone androdeb repository:
+```
+git clone https://github.com/joelagnel/androdeb.git
+cd androdeb
+```
+
+* Fastest way of installing androdeb onto your device:
+```
+# First make sure device is connected to system (only single device supported)
+./androdeb prepare --download
+```
+
+* Run androdeb shell
+```
+./androdeb shell
+```
+
 Notes:
 * This project is pre-alpha and work in progress!
