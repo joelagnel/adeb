@@ -1,5 +1,5 @@
-androdeb: Android development environment for power users
----------------------------------------------------------
+androdeb
+--------
 
 **androdeb** aims to provide a powerful Linux shell environment where one can
 run popular and mainstream Linux tracing, compiling, editing and other
