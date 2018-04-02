@@ -1,10 +1,10 @@
 androdeb
 --------
 
-**androdeb** aims to provide a powerful Linux shell environment where one can
+**androdeb** provides a powerful Linux shell environment where one can
 run popular and mainstream Linux tracing, compiling, editing and other
-development tools on an Android system. All the commands typically available on
-a modern Linux system are supported in androdeb.
+development tools on an existing Android device. All the commands typically
+available on a modern Linux system are supported in androdeb.
 
 Usecases
 --------
