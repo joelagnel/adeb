@@ -3,8 +3,8 @@ androdeb: Android development environment for power users
 
 **androdeb** aims to provide a powerful Linux shell environment where one can
 run popular and mainstream Linux tracing, compiling, editing and other
-development tools. All the commands typically available on a modern Linux
-system are supported in androdeb.
+development tools on an Android system. All the commands typically available on
+a modern Linux system are supported in androdeb.
 
 Usecases
 --------
