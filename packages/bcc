@@ -21,3 +21,5 @@ clang-6.0
 python-netaddr
 python-pyroute2
 "
+
+INSTALL_BCC=1

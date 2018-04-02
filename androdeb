@@ -26,9 +26,9 @@ case $key in
     --compilers) source $spath/packages/compilers; shift || true; ;;
     --editors) source $spath/packages/editors; shift || true; ;;
     --scheduler) source $spath/packages/scheduler; shift || true; ;;
-    --fullbuild) for f in $(ls $spath/packages|grep -v bcc); do source packages/$f; done; shift || true; ;;
+    --fullbuild) for f in $(ls $spath/packages); do source packages/$f; done; shift || true; ;;
     --download) DOWNLOAD=1; shift || true; ;;
-    --bcc) source $spath/packages/bcc; INSTALL_BCC=1; shift || true;     ;;
+    --bcc) source $spath/packages/bcc; shift || true;     ;;
     --kernelsrc) KERNELSRC="$2"; shift || true;     shift || true;     ;;
     --tempdir) TDIR="$2"; shift || true;     shift || true;     ;;
     --buildtar) TARDIR="$2"; shift || true;     shift || true;     ;;
@@ -89,9 +89,6 @@ if [ -z "$PREPARE" ]; then usage; fi
 if [[ $EUID -ne 0 ]]; then die 6 "For prepare, this tool must run as root. Try: ./sudo androdeb prepare <args>"; fi
 
 if [ ! -z "$TARF" ] && [ ! -f $TARF ] && [ -z "$DOWNLOAD" ]; then die 7 "archive provided doesn't exist"; fi
-
-if [ ! -z "$INSTALL_BCC" ] && [ -z "$KERNELSRC" ] && [ -z "$TARDIR" ];
-	then die 4 "--kernelsrc must be provided with --bcc (unless --buildtar is provided)."; fi
 
 if [ ! -z "$KERNELSRC" ] && [ ! -d $KERNELSRC ]; then die 5 "Kernel source directory provided doesn't exist"; fi
 
