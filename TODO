@@ -2,3 +2,4 @@
 - check if host deps are installed (Qemu etc)
 - add an adb remove command to remove an env explicitly
 - Improve suggestions for missing adb
+- make commands that don't need root run as non-root
