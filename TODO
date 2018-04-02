@@ -1,5 +1,6 @@
 - check for space on both host and target
 - check if host deps are installed (Qemu etc)
+
 - make update headers indep of bcc, but bcc dependent on it
 - make fullbuild also select bcc
 - build tar independent of prepare

@@ -7,7 +7,13 @@ source $spath/utils/android
 source $spath/utils/banners
 
 # Set default vars
-DISTRO=buster;      PACKAGES="";	ARCH=arm64
+DISTRO=buster; ARCH=arm64
+
+# Default packages
+DEFAULT_PACKAGES+="\
+bash
+ca-certificates
+"
 
 # Parse command line parameters
 if [ $# -lt 1 ]; then usage; fi; POSITIONAL=()
@@ -31,16 +37,10 @@ case $key in
 esac
 done
 
-if [ ! -z "$PREPARE" ] && [ -z "$DOWNLOAD" ] && [ -z "$TARF" ] && [ "x$PACKAGES" == "x" ]; then
+if [ ! -z "$PREPARE" ] && [ -z "$DOWNLOAD" ] && [ -z "$TARF" ] && [ -z "$PACKAGES" ] && [ -z "$KERNELSRC" ]; then
 	echo "Need to specifify something to prepare, or try: ./andrdeb prepare --download"; usage; fi
 
 if [[ ! -z ${TARDIR+x} ]] && [[ ! -d $TARDIR ]]; then die 7 "Tar dir specified doesn't exist"; fi
-
-# Default packages
-PACKAGES+="\
-bash
-ca-certificates
-"
 
 do_adb_root || die 3 "adb root failed, make sure:
 - device is connected, and there's only one device (TODO: add multi device support)
@@ -62,14 +62,29 @@ fi
 ##########################################################
 #  PREPARE 
 ##########################################################
+
+function do_cleanup() {
+	rm -rf $TDIR/*; if [ $MKTEMP -eq 1 ]; then rm -rf $TDIR; fi
+}
+
+function push_unpack_headers() {
+	adb shell ls /data/androdeb/debian > /dev/null 2>&1
+	if [ $? -ne 0 ]; then die 8 "Existing androdev env not found to update kernel headers into."; fi
+
+	adb shell rm -rf /data/androdeb/debian/kernel-headers/
+	adb shell mkdir  /data/androdeb/debian/kernel-headers/
+	adb push $TDIR_ABS/kh.tgz /data/androdeb/
+	echo "Storing kernel headers into androdeb /kernel-headers/"
+	adb shell tar -xvf /data/androdeb/kh.tgz -C /data/androdeb/debian/kernel-headers/ > /dev/null
+	adb shell rm /data/androdeb/kh.tgz
+}
+
 # Prepare is the last command checked
 if [ -z "$PREPARE" ]; then usage; fi
 
 if [[ $EUID -ne 0 ]]; then die 6 "For prepare, this tool must run as root. Try: ./sudo androdeb prepare <args>"; fi
 
-if [ ! -z "$TARF" ] && [ -z "$DOWNLOAD" ]; then
-   if [ ! -f ${TARF} ]; then die 7 "archive provided doesn't exist"; fi
-fi
+if [ ! -z "$TARF" ] && [ ! -f $TARF ] && [ -z "$DOWNLOAD" ]; then die 7 "archive provided doesn't exist"; fi
 
 if [[ ! -z ${INSTALL_BCC+x} ]] && [[ -z ${KERNELSRC+x} ]]; then die 4 "--kernelsrc must be provided with --bcc"; fi
 
@@ -88,24 +103,35 @@ if [ ! -z "$DOWNLOAD" ]; then
    curl -L https://github.com/joelagnel/androdeb/releases/download/$VERSION/androdeb-fs.tgz --output $TDIR_ABS/androdeb-fs.tgz;
    TARF=$TDIR_ABS/androdeb-fs.tgz; fi
 
-# Package kernel headers
-if [[ ! -z ${INSTALL_BCC} ]] && [[ ! -z ${KERNELSRC} ]]; then
-$spath/bcc/build-kheaders-targz.sh ${KERNELSRC} $TDIR_ABS/kh.tgz || die 6 "Failed to package kernel headers"; fi
-
 OUT_TMP=$TDIR/debian; rm -rf $OUT_TMP; mkdir -p $OUT_TMP
-if [ -f $TDIR_ABS/kh.tgz ]; then
+
+# Package kernel headers
+if [ ! -z "$KERNELSRC" ]; then
+	$spath/bcc/build-kheaders-targz.sh ${KERNELSRC} $TDIR_ABS/kh.tgz ||
+						die 6 "Failed to package kernel headers"
+	# Is header update the only thing left to do?
+	if [[ -z "$PACKAGES" ]] && [[ -z "$TARF" ]]; then
+		push_unpack_headers; do_cleanup; exit 0; fi
+
 	mkdir $OUT_TMP/kernel-headers
 	tar -xvf $TDIR_ABS/kh.tgz -C $OUT_TMP/kernel-headers/
 fi
 
+# Build FS from existing tar, very simple.
 if [ ! -z "$TARF" ]; then
 	echo "Using archive at $TARF for filesystem preparation"
 	adb shell mkdir -p /data/androdeb/
 	adb push $TARF /data/androdeb/deb.tar.gz
 	adb push $spath/addons/* /data/androdeb/
 	adb shell /data/androdeb/device-unpack
-else
 
+	if [ ! -z "$KERNELSRC" ]; then push_unpack_headers; fi
+
+	do_cleanup
+	exit 0
+fi
+
+PACKAGES+="$DEFAULT_PACKAGES"
 echo "Full package list: $PACKAGES"
 echo "Using temporary directory: $TDIR"
 
@@ -156,10 +182,7 @@ adb shell /data/androdeb/device-unpack
 if [[ ! -z ${INSTALL_BCC+x} ]]; then
 adb shell /data/androdeb/run-command /bcc-master/build-bcc.sh; fi
 
-
-fi  # !TARF
-
-rm -rf $TDIR/*; if [ $MKTEMP -eq 1 ]; then rm -rf $TDIR; fi
+do_cleanup
 
 # Extract a tar of the built, compiled and installed androdeb env
 if [[ ! -z ${TARDIR+x} ]]; then
