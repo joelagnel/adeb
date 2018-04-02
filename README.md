@@ -34,7 +34,7 @@ free space in the data partition.
 
 Host:
 A machine running recent Ubuntu or Debian, with 4GB of memory and 4GB free space.
-Host needs qemu-debootstrap package installed. Run `apt-get install qemu-debootstrap`.
+Host needs qemu-debootstrap package installed. Run `apt-get install qemu-user-static`.
 
 Quick Start Instructions
 ------------------------
