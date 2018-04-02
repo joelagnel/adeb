@@ -1,4 +1,7 @@
 #!/bin/bash -e
+#
+# (c) Joel Fernandes <joel@linuxinternals.org>
+
 VERSION=v0.95
 
 spath=$( cd "$(dirname "$0")" ; pwd -P )
