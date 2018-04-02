@@ -61,7 +61,7 @@ More advanced usage instructions
 ./androdeb prepare --download --kernelsrc /path/to/kernel-source
 ```
 
-### Update kernel headers onto an existing install:
+### Update kernel headers onto an already prepared device:
 
 If you need to put kernel sources for an existing install, run:
 ```
@@ -91,7 +91,7 @@ This is unlike `--download` where the androdeb rootfs is itself pulled from the 
 ```
 ./androdeb prepare --bcc --kernelsrc /path/to/kernel-source/
 ```
-Note: BCC is built while being installed. Also --kernelsrc is
+Note: BCC is built while being installed. Also `--kernelsrc` is
 recommended for tools to function unless device has them
 already.
 
