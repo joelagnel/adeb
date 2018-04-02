@@ -1,5 +1,5 @@
 #!/bin/bash -e
-VERSION=v0.9
+VERSION=v0.95
 
 spath=$( cd "$(dirname "$0")" ; pwd -P )
 curdir=$( pwd -P )
