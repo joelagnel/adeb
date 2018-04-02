@@ -8,10 +8,10 @@ a modern Linux system are supported in androdeb.
 
 Usecases
 --------
-(1) Powerful development environment with all tools ready to go (editors,
+1. Powerful development environment with all tools ready to go (editors,
 compilers, tracers, perl/python etc) for your on-device development.
 
-(2) No more cross-compiler needed: Because it comes with gcc and clang, one can
+2. No more cross-compiler needed: Because it comes with gcc and clang, one can
 build target packages natively without needing to do any cross compilation. We even
 ship git, and have support to run apt-get to get any missing development packages
 from the web.
