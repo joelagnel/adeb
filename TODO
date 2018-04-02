@@ -1,2 +1,4 @@
 - check for space on both host and target
 - check if host deps are installed (Qemu etc)
+- add an adb remove command to remove an env explicitly
+- Improve suggestions for missing adb
