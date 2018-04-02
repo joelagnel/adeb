@@ -134,7 +134,6 @@ if [ ! -z "$TARF" ]; then
 fi
 
 PACKAGES+="$DEFAULT_PACKAGES"
-echo "Full package list: $PACKAGES"
 echo "Using temporary directory: $TDIR"
 
 time qemu-debootstrap --arch arm64 --include=$(make_csv "$PACKAGES") \
