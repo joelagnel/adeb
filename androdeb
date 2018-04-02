@@ -79,6 +79,10 @@ function push_unpack_headers() {
 	adb shell rm /data/androdeb/kh.tgz
 }
 
+function all_done_banner() {
+	echo "All done! Run \"androdeb shell\" to enter environment"
+}
+
 # Prepare is the last command checked
 if [ -z "$PREPARE" ]; then usage; fi
 
@@ -86,9 +90,10 @@ if [[ $EUID -ne 0 ]]; then die 6 "For prepare, this tool must run as root. Try: 
 
 if [ ! -z "$TARF" ] && [ ! -f $TARF ] && [ -z "$DOWNLOAD" ]; then die 7 "archive provided doesn't exist"; fi
 
-if [[ ! -z ${INSTALL_BCC+x} ]] && [[ -z ${KERNELSRC+x} ]]; then die 4 "--kernelsrc must be provided with --bcc"; fi
+if [ ! -z "$INSTALL_BCC" ] && [ -z "$KERNELSRC" ] && [ -z "$TARDIR" ];
+	then die 4 "--kernelsrc must be provided with --bcc (unless --buildtar is provided)."; fi
 
-if [[ ! -z ${KERNELSRC+x} ]] && [[ ! -d ${KERNELSRC} ]]; then die 5 "Kernel source directory provided doesn't exist"; fi
+if [ ! -z "$KERNELSRC" ] && [ ! -d $KERNELSRC ]; then die 5 "Kernel source directory provided doesn't exist"; fi
 
 print_prepare_banner
 
@@ -107,14 +112,15 @@ OUT_TMP=$TDIR/debian; rm -rf $OUT_TMP; mkdir -p $OUT_TMP
 
 # Package kernel headers
 if [ ! -z "$KERNELSRC" ]; then
-	$spath/bcc/build-kheaders-targz.sh ${KERNELSRC} $TDIR_ABS/kh.tgz ||
-						die 6 "Failed to package kernel headers"
+	echo "Building and updating kernel headers from kernel source dir ($KERNELSRC)"
+	$spath/bcc/build-kheaders-targz.sh ${KERNELSRC} $TDIR_ABS/kh.tgz > /dev/null
+
 	# Is header update the only thing left to do?
 	if [[ -z "$PACKAGES" ]] && [[ -z "$TARF" ]]; then
-		push_unpack_headers; do_cleanup; exit 0; fi
+		push_unpack_headers; do_cleanup; all_done_banner; exit 0; fi
 
 	mkdir $OUT_TMP/kernel-headers
-	tar -xvf $TDIR_ABS/kh.tgz -C $OUT_TMP/kernel-headers/
+	tar -xvf $TDIR_ABS/kh.tgz -C $OUT_TMP/kernel-headers/ > /dev/null
 fi
 
 # Build FS from existing tar, very simple.
@@ -127,8 +133,7 @@ if [ ! -z "$TARF" ]; then
 
 	if [ ! -z "$KERNELSRC" ]; then push_unpack_headers; fi
 
-	do_cleanup
-	exit 0
+	do_cleanup; all_done_banner; exit 0
 fi
 
 PACKAGES+="$DEFAULT_PACKAGES"
@@ -191,5 +196,4 @@ if [[ ! -z ${TARDIR+x} ]]; then
 	adb pull /data/androdeb/androdeb-fs.tgz $TARDIR/
 	adb shell rm /data/androdeb/androdeb-fs.tgz; fi
 
-# Use --foreign and --variant=minbase to build minimal deb first stage
-# Use fakeroot tar to build tar with root files
+all_done_banner
