@@ -52,19 +52,21 @@ sudo ./androdeb prepare --download
 ```
 More advanced usage instructions
 --------------------------------
-* Install kernel headers in addition to preparing androdeb device:
+### Install kernel headers in addition to preparing androdeb device:
 ```
 ./androdeb prepare --download --kernelsrc /path/to/kernel-source
 ```
 
-* Update kernel headers onto an existing install:
+### Update kernel headers onto an existing install:
+
 If you need to put kernel sources for an existing install, run:
 ```
 ./androdeb prepare --kernelsrc /path/to/kernel-source
 ```
 Note: The kernel sources should have been built (atleast build should have started).
 
-* Build and prepare device with a custom rootfs locally:
+### Build and prepare device with a custom rootfs locally:
+
 The androdeb fs will be prepared locally by downloading packages as needed:
 ```
 ./androdeb prepare --fullbuild
