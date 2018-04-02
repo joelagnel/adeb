@@ -16,11 +16,11 @@ build target packages natively without needing to do any cross compilation. We e
 ship git, and have support to run apt-get to get any missing development packages
 from the web.
 
-(3) Using these one can run popular tools such as BCC that are difficult to run
+3. Using these one can run popular tools such as BCC that are difficult to run
 in an Android environment due to lack of packages, dependencies and cross-compilation
 needed for their operation.
 
-(4) No more crippled tools: Its often a theme to build a static binary with
+4. No more crippled tools: Its often a theme to build a static binary with
 features disabled, because you couldn't cross-compile the feature's dependencies. One
 classic example is perf. However, thanks to androdeb, we can build perf natively
 on device without having to cripple it.
