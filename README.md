@@ -1,6 +1,7 @@
-Project to give a rich Android development environment for end-users to use over adb.
+androdeb: a rich Android development environment for users
+==========================================================
 
-androdeb aims to provide a powerful Linux environment where one can run popular
+**androdeb aims** to provide a powerful Linux environment where one can run popular
 and mainstream Linux tracing, compiling, editing and other development tools.
 
 Usecases
@@ -10,7 +11,8 @@ compilers, tracers, perl/python etc) for your on-device development.
 
 (2) No more cross-compiler needed: Because it comes with gcc and clang, one can
 build target packages natively without needing to do any cross compilation. We even
-ship git, and have support to run apt-get to get any missing development packages.
+ship git, and have support to run apt-get to get any missing development packages
+from the web.
 
 (3) Using these one can run popular tools such as BCC that are difficult to run
 in an Android environment due to lack of packages, dependencies and cross-compilation
