@@ -161,10 +161,6 @@ chroot $OUT_TMP rm /bin/sh || true
 chroot $OUT_TMP ln -s /bin/bash /bin/sh || true
 cp $spath/addons/bashrc $OUT_TMP/.bashrc
 
-# For mounting android partitions
-mkdir $OUT_TMP/system
-mkdir $OUT_TMP/vendor
-
 # Cleanup
 rm -rf $OUT_TMP/lib/udev/*
 rm -rf $OUT_TMP/var/lib/apt/lists/*

@@ -14,7 +14,7 @@ mount --bind /sys/kernel/debug/tracing/ debian/sys/kernel/debug/tracing/
 
 # Mount Android partitions
 if [ -d /d/ ]; then
-	ln -s /sys/kernel/debug debian/d
+	if [ ! -d debian/d ]; then ln -s /sys/kernel/debug debian/d; fi
 fi
 
 if [ -d /data/ ]; then
