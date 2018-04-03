@@ -46,8 +46,12 @@ if [ ! -z "$PREPARE" ] && [ -z "$DOWNLOAD" ] && [ -z "$TARF" ] && [ -z "$PACKAGE
 if [[ ! -z ${TARDIR+x} ]] && [[ ! -d $TARDIR ]]; then die 7 "Tar dir specified doesn't exist"; fi
 
 do_adb_root || die 3 "adb root failed, make sure:
+- adb is available (try to run adb manually and see if it works)
 - device is connected, and there's only one device (TODO: add multi device support)
-- device is userdebug."
+- device is userdebug.
+
+Note: adb can be typically obtained using the android-adb-tools or the adb
+packages on your distro, or by installing the Android SDK."
 
 ##########################################################
 #  SHELL
