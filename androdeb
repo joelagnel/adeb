@@ -4,7 +4,8 @@
 
 VERSION=v0.96
 
-spath=$( cd "$(dirname "$0")" ; pwd -P )
+spath="$(dirname "$(readlink -f "$0")")"
+# spath=$( cd "$(dirname "$0")" ; pwd -P )
 curdir=$( pwd -P )
 source $spath/utils/android
 source $spath/utils/banners
