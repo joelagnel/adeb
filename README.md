@@ -44,23 +44,24 @@ Quick Start Instructions
 ```
 git clone https://github.com/joelagnel/androdeb.git
 cd androdeb
+sudo ln -s ./androdeb /usr/bin/androdeb
 ```
 
 * Fastest way of installing androdeb onto your device:
 ```
 # First make sure device is connected to system
-sudo ./androdeb prepare --download
+sudo androdeb prepare --download
 ```
 
 * Now run androdeb shell to enter your new environment!:
 ```
-./androdeb shell
+androdeb shell
 ```
 
 * Once done, hit `CTRL + D` and you will exit out of the shell.
 To remove androdeb from the device, run:
 ```
-./androdeb remove
+androdeb remove
 ```
 If you have multiple devices connected, please add `-s <serialnumber>`.
 Serial numbers of all devices connected can be obtained by `adb devices`.
@@ -69,14 +70,14 @@ More advanced usage instructions
 --------------------------------
 ### Install kernel headers in addition to preparing androdeb device:
 ```
-./androdeb prepare --download --kernelsrc /path/to/kernel-source
+androdeb prepare --download --kernelsrc /path/to/kernel-source
 ```
 
 ### Update kernel headers onto an already prepared device:
 
 If you need to put kernel sources for an existing install, run:
 ```
-./androdeb prepare --kernelsrc /path/to/kernel-source
+androdeb prepare --kernelsrc /path/to/kernel-source
 ```
 Note: The kernel sources should have been built (atleast build should have started).
 
@@ -84,23 +85,23 @@ Note: The kernel sources should have been built (atleast build should have start
 
 The androdeb fs will be prepared locally by downloading packages as needed:
 ```
-./androdeb prepare --fullbuild
+androdeb prepare --fullbuild
 ```
 This is unlike `--download` where the androdeb rootfs is itself pulled from the web.
 
 ### Add kernel headers to device in addition to building locally:
 ```
-./androdeb prepare --fullbuild --kernelsrc /path/to/kernel-source/
+androdeb prepare --fullbuild --kernelsrc /path/to/kernel-source/
 ```
 
 ### Instead of `--fullbuild`, customize what you install:
 ```
-./androdeb prepare --editors --compilers
+androdeb prepare --editors --compilers
 ```
 
 ### Install only BCC:
 ```
-./androdeb prepare --bcc --kernelsrc /path/to/kernel-source/
+androdeb prepare --bcc --kernelsrc /path/to/kernel-source/
 ```
 Note: BCC is built while being installed. Also `--kernelsrc` is
 recommended for tools to function unless device has them
@@ -108,7 +109,7 @@ already.
 
 ### Extract the FS from the device, after its prepared:
 ```
-./androdeb prepare --fullbuild --buildtar /path/
+androdeb prepare --fullbuild --buildtar /path/
 ```
 After device is prepared, it will extract the root fs from it
 and store it as a tar archive at `/path/androdeb-fs.tgz`. This
@@ -116,5 +117,5 @@ can be used later.
 
 ### Use a previously prepared androdeb rootfs tar from local:
 ```
-./androdeb prepare --archive /path/androdeb-fs.tgz
+androdeb prepare --archive /path/androdeb-fs.tgz
 ```
