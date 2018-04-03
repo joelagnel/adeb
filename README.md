@@ -52,10 +52,19 @@ cd androdeb
 sudo ./androdeb prepare --download
 ```
 
-* Now run androdeb shell:
+* Now run androdeb shell to enter your new environment!:
 ```
 ./androdeb shell
 ```
+
+* Once done, hit `CTRL + D` and you will exit out of the shell.
+To remove androdeb from the device, run:
+```
+./androdeb remove
+```
+If you have multiple devices connected, please add `-s <serialnumber>`.
+Serial numbers of all devices connected can be obtained by `adb devices`.
+
 More advanced usage instructions
 --------------------------------
 ### Install kernel headers in addition to preparing androdeb device:
