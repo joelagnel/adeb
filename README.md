@@ -48,7 +48,7 @@ cd androdeb
 
 * Fastest way of installing androdeb onto your device:
 ```
-# First make sure device is connected to system (only single device supported)
+# First make sure device is connected to system
 sudo ./androdeb prepare --download
 ```
 
