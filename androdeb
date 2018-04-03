@@ -11,6 +11,7 @@ source $spath/utils/banners
 
 # Set default vars
 DISTRO=buster; ARCH=arm64
+ADB="adb"
 
 # Default packages
 DEFAULT_PACKAGES+="\
@@ -35,6 +36,7 @@ case $key in
     --kernelsrc) KERNELSRC="$2"; shift || true;     shift || true;     ;;
     --tempdir) TDIR="$2"; shift || true;     shift || true;     ;;
     --buildtar) TARDIR="$2"; shift || true;     shift || true;     ;;
+    --device|-s) ADB="$ADB -s $2"; shift || true; shift || true; ;;
     --debug) set -x; shift || true; ;;
     *) echo "Unknown option ($1)"; usage; ;;
 esac
@@ -46,9 +48,8 @@ if [ ! -z "$PREPARE" ] && [ -z "$DOWNLOAD" ] && [ -z "$TARF" ] && [ -z "$PACKAGE
 if [[ ! -z ${TARDIR+x} ]] && [[ ! -d $TARDIR ]]; then die 7 "Tar dir specified doesn't exist"; fi
 
 do_adb_root || die 3 "adb root failed, make sure:
-- adb is available (try to run adb manually and see if it works)
-- device is connected, and there's only one device (TODO: add multi device support)
-- device is userdebug.
+- If multiple devices connected, provide --device <serialno>  (or -s <serialno>)
+- Try to run \"adb root\" manually and see if it works. Typically this needs a userdebug build.
 
 Note: adb can be typically obtained using the android-adb-tools or the adb
 packages on your distro, or by installing the Android SDK."
@@ -57,12 +58,12 @@ packages on your distro, or by installing the Android SDK."
 #  SHELL
 ##########################################################
 if [ ! -z ${ASHELL+x} ]; then
-	set +e; adb shell ls /data/androdeb/debian/.bashrc > /dev/null 2>&1
+	set +e; $ADB shell ls /data/androdeb/debian/.bashrc > /dev/null 2>&1
 	if [ $? -ne 0 ]; then
 	   die 2 "Device doesn't have an androdeb environment, run \"./androdeb prepare\" first";
 	fi; set -e
 
-	adb shell -t /data/androdeb/run
+	$ADB shell -t /data/androdeb/run
 	exit 0
 fi
 
@@ -75,15 +76,15 @@ function do_cleanup() {
 }
 
 function push_unpack_headers() {
-	adb shell ls /data/androdeb/debian > /dev/null 2>&1
+	$ADB shell ls /data/androdeb/debian > /dev/null 2>&1
 	if [ $? -ne 0 ]; then die 8 "Existing androdev env not found to update kernel headers into."; fi
 
-	adb shell rm -rf /data/androdeb/debian/kernel-headers/
-	adb shell mkdir  /data/androdeb/debian/kernel-headers/
-	adb push $TDIR_ABS/kh.tgz /data/androdeb/
+	$ADB shell rm -rf /data/androdeb/debian/kernel-headers/
+	$ADB shell mkdir  /data/androdeb/debian/kernel-headers/
+	$ADB push $TDIR_ABS/kh.tgz /data/androdeb/
 	echo "Storing kernel headers into androdeb /kernel-headers/"
-	adb shell tar -xvf /data/androdeb/kh.tgz -C /data/androdeb/debian/kernel-headers/ > /dev/null
-	adb shell rm /data/androdeb/kh.tgz
+	$ADB shell tar -xvf /data/androdeb/kh.tgz -C /data/androdeb/debian/kernel-headers/ > /dev/null
+	$ADB shell rm /data/androdeb/kh.tgz
 }
 
 function all_done_banner() {
@@ -128,10 +129,10 @@ fi
 # Build FS from existing tar, very simple.
 if [ ! -z "$TARF" ]; then
 	echo "Using archive at $TARF for filesystem preparation"
-	adb shell mkdir -p /data/androdeb/
-	adb push $TARF /data/androdeb/deb.tar.gz
-	adb push $spath/addons/* /data/androdeb/
-	adb shell /data/androdeb/device-unpack
+	$ADB shell mkdir -p /data/androdeb/
+	$ADB push $TARF /data/androdeb/deb.tar.gz
+	$ADB push $spath/addons/* /data/androdeb/
+	$ADB shell /data/androdeb/device-unpack
 
 	if [ ! -z "$KERNELSRC" ]; then push_unpack_headers; fi
 
@@ -180,22 +181,22 @@ echo "Compressing new filesystem to prepare to push to Android /data/androdeb/"
 tar -zcf $TDIR/deb.tar.gz -C $TDIR debian
 
 # Push tar to device and start unpack
-adb shell mkdir -p /data/androdeb/
-adb push $TDIR/deb.tar.gz /data/androdeb/
-adb push $spath/addons/* /data/androdeb/
-adb shell /data/androdeb/device-unpack
+$ADB shell mkdir -p /data/androdeb/
+$ADB push $TDIR/deb.tar.gz /data/androdeb/
+$ADB push $spath/addons/* /data/androdeb/
+$ADB shell /data/androdeb/device-unpack
 
 # Build BCC and install bcc on device if needed
 if [[ ! -z ${INSTALL_BCC+x} ]]; then
-adb shell /data/androdeb/run-command /bcc-master/build-bcc.sh; fi
+$ADB shell /data/androdeb/run-command /bcc-master/build-bcc.sh; fi
 
 do_cleanup
 
 # Extract a tar of the built, compiled and installed androdeb env
 if [[ ! -z ${TARDIR+x} ]]; then
 	echo "Creating and pulling tarball of androdeb env from device"
-	adb shell /data/androdeb/build-debian-tar
-	adb pull /data/androdeb/androdeb-fs.tgz $TARDIR/
-	adb shell rm /data/androdeb/androdeb-fs.tgz; fi
+	$ADB shell /data/androdeb/build-debian-tar
+	$ADB pull /data/androdeb/androdeb-fs.tgz $TARDIR/
+	$ADB shell rm /data/androdeb/androdeb-fs.tgz; fi
 
 all_done_banner
