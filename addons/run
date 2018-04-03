@@ -11,8 +11,28 @@ mount --bind /dev debian/dev/ > /dev/null
 mount --bind /sys debian/sys/ > /dev/null
 mount --bind /sys/kernel/debug/ debian/sys/kernel/debug/ > /dev/null
 mount --bind /sys/kernel/debug/tracing/ debian/sys/kernel/debug/tracing/
-if [ -d /system/ ]; then mount --bind /system debian/system/; fi
-if [ -d /vendor/ ]; then mount --bind /vendor debian/vendor/; fi
+
+# Mount Android partitions
+if [ -d /d/ ]; then
+	mkdir -p debian/d/
+	mount --bind /d debian/d/
+fi
+
+if [ -d /data/ ]; then
+	mkdir -p debian/data/
+	mount --bind /system debian/data/
+fi
+
+if [ -d /system/ ]; then
+	mkdir -p debian/system/
+	mount --bind /system debian/system/
+fi
+
+if [ -d /vendor/ ]; then
+	mkdir -p debian/vendor/
+	mount --bind /vendor debian/vendor/
+fi
+
 chroot debian/ /bin/bash
 
 # tear everything down
