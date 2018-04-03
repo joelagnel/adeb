@@ -25,6 +25,7 @@ while [[ $# -gt 0 ]]; do key="$1";
 case $key in
     prepare) PREPARE=1;     shift || true;    ;;
     shell) ASHELL=1;     shift || true;     ;;
+    remove) REMOVE=1;     shift || true;     ;;
     --archive) TARF=$2; shift || true; shift || true; ;;
     --tracers) source $spath/packages/tracers; shift || true; ;;
     --compilers) source $spath/packages/compilers; shift || true; ;;
@@ -47,12 +48,17 @@ if [ ! -z "$PREPARE" ] && [ -z "$DOWNLOAD" ] && [ -z "$TARF" ] && [ -z "$PACKAGE
 
 if [[ ! -z ${TARDIR+x} ]] && [[ ! -d $TARDIR ]]; then die 7 "Tar dir specified doesn't exist"; fi
 
-do_adb_root || die 3 "adb root failed, make sure:
+do_adb_root "$ADB" || die 3 "adb root failed, make sure:
 - If multiple devices connected, provide --device <serialno>  (or -s <serialno>)
 - Try to run \"adb root\" manually and see if it works. Typically this needs a userdebug build.
 
 Note: adb can be typically obtained using the android-adb-tools or the adb
 packages on your distro, or by installing the Android SDK."
+
+if [ ! -z "$REMOVE" ]; then
+	die_if_no_androdeb "Nothing to remove."
+	$ADB shell /data/androdeb/device-umount-all;
+	$ADB shell rm -rf /data/androdeb; exit 0; fi
 
 ##########################################################
 #  SHELL
@@ -76,8 +82,7 @@ function do_cleanup() {
 }
 
 function push_unpack_headers() {
-	$ADB shell ls /data/androdeb/debian > /dev/null 2>&1
-	if [ $? -ne 0 ]; then die 8 "Existing androdev env not found to update kernel headers into."; fi
+	die_if_no_androdeb "Couldn't update headers."
 
 	$ADB shell rm -rf /data/androdeb/debian/kernel-headers/
 	$ADB shell mkdir  /data/androdeb/debian/kernel-headers/
@@ -142,7 +147,7 @@ fi
 PACKAGES+="$DEFAULT_PACKAGES"
 echo "Using temporary directory: $TDIR"
 
-if [[ $EUID -ne 0 ]]; then echo "The next stage needs root. You may be accessed for root password."; fi
+if [[ $EUID -ne 0 ]]; then echo ""; echo "Please enter your root password for next stage:"; fi
 sudo qemu-debootstrap --arch arm64 --include=$(make_csv "$PACKAGES") \
 	$DISTRO $OUT_TMP http://deb.debian.org/debian/
 
