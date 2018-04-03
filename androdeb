@@ -99,6 +99,8 @@ function all_done_banner() {
 # Prepare is the last command checked
 if [ -z "$PREPARE" ]; then usage; fi
 
+if [[ $EUID -ne 0 ]]; then die 6 "For prepare, this tool must run as root. Try: ./sudo androdeb prepare <args>"; fi
+
 if [ ! -z "$TARF" ] && [ ! -f $TARF ] && [ -z "$DOWNLOAD" ]; then die 7 "archive provided doesn't exist"; fi
 
 if [ ! -z "$KERNELSRC" ] && [ ! -d $KERNELSRC ]; then die 5 "Kernel source directory provided doesn't exist"; fi
@@ -147,8 +149,7 @@ fi
 PACKAGES+="$DEFAULT_PACKAGES"
 echo "Using temporary directory: $TDIR"
 
-if [[ $EUID -ne 0 ]]; then echo ""; echo "Please enter your root password for next stage:"; fi
-sudo qemu-debootstrap --arch arm64 --include=$(make_csv "$PACKAGES") \
+time qemu-debootstrap --arch arm64 --include=$(make_csv "$PACKAGES") \
 	$DISTRO $OUT_TMP http://deb.debian.org/debian/
 
 # Some reason debootstrap leaves these mounted
