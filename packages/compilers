@@ -2,6 +2,8 @@ PACKAGES+="\
 git
 clang-6.0
 gcc
+rustc
+golang
 libtool
 autoconf
 make
