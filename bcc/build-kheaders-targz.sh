@@ -25,11 +25,13 @@ find include >> /tmp/kernel-headers.h
 grep "include/generated/autoconf.h" /tmp/kernel-headers.h > /dev/null 2>&1
 retgrep=$?
 if [ $retgrep -ne 0 ]; then
-	echo ""
-	echo "The kernel sources at ${KERNEL_PATH} you pointed to aren't configured and built."
-	echo "Please atleast run in your kernel sources:"
-	echo $'make defconfig\nmake'
-	echo $'\nNote: You dont need to do the full build since headers are generated early on.\n'
+	>&2 echo ""
+	>&2 echo "The kernel sources at ${KERNEL_PATH} you pointed to aren't configured and built."
+	>&2 echo "Please atleast run in your kernel sources:"
+	>&2 echo $'make defconfig\nmake'
+	>&2 echo $'\nNote: You dont need to do the full build since headers are generated early on.\n'
+	>&2 echo "Note: Please build your kernel in tree (build and source should be in same directory)"
+	>&2 echo ""
 	exit $retgrep
 fi
 
