@@ -27,6 +27,7 @@ case $key in
     prepare) PREPARE=1;     shift || true;    ;;
     shell) ASHELL=1;     shift || true;     ;;
     remove) REMOVE=1;     shift || true;     ;;
+    pull) PULL=1; shift || true; ;;
     --archive) TARF=$2; shift || true; shift || true; ;;
     --tracers) source $spath/packages/tracers; shift || true; ;;
     --compilers) source $spath/packages/compilers; shift || true; ;;
@@ -43,6 +44,14 @@ case $key in
     *) echo "Unknown option ($1)"; usage; ;;
 esac
 done
+
+if [ ! -z "$PULL" ]; then
+	echo "Updating androdeb by git pull"
+	cd $spath
+	git pull
+	echo "Done."
+	exit 0
+fi
 
 if [ ! -z "$PREPARE" ] && [ -z "$DOWNLOAD" ] && [ -z "$TARF" ] && [ -z "$PACKAGES" ] && [ -z "$KERNELSRC" ]; then
 	echo "Need to specifify something to prepare, or try: ./andrdeb prepare --download"; usage; fi
