@@ -1,10 +1,15 @@
 #!/bin/bash
 
+spath="$(dirname "$(readlink -f "$0")")"
+source $spath/utils/android
+source $spath/utils/banners
+
 ARCH=$1
 DISTRO=$2
 TDIR=$3
 OUT_TMP=$4
 PACKAGES=$5
+INSTALL_BCC=$6
 
 time qemu-debootstrap --arch $ARCH --include=$(make_csv "$PACKAGES") \
 	$DISTRO $OUT_TMP http://deb.debian.org/debian/
