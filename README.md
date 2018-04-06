@@ -50,7 +50,7 @@ sudo ln -s ./androdeb /usr/bin/androdeb
 * Fastest way of installing androdeb onto your device:
 ```
 # First make sure device is connected to system
-sudo androdeb prepare --download
+androdeb prepare --download
 ```
 
 * Now run androdeb shell to enter your new environment!:
@@ -65,6 +65,11 @@ androdeb remove
 ```
 If you have multiple devices connected, please add `-s <serialnumber>`.
 Serial numbers of all devices connected can be obtained by `adb devices`.
+
+* To update the androdeb you cloned on your host, run:
+```
+androdeb pull
+```
 
 More advanced usage instructions
 --------------------------------

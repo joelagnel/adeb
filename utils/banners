@@ -8,6 +8,8 @@ print_prepare_banner() {
 usage() {
 	echo "androdeb"
 	echo "	shell		Enter the androdeb shell environment and get to work!"
+	echo "	remove		Remove androdeb from the device"
+	echo "	pull		Git pull androdeb to update it on your host"
 	echo ""
 	echo "	prepare		Prepare the device (when running for the first time)"
 	echo "	--tracers	Enable tracing packages (perf and trace-cmd)"
@@ -27,8 +29,8 @@ usage() {
 	echo "	--tempdir	Use a specific temporary directory for build operation"
 	echo "	--buildtar	Local directory to store tarball of androdeb env from device"
 	echo "	--distro	Debian distro to base on (default is buster)"
-	echo "  --device	Serial number of adb device."
-	echo "        -s	Serial number of adb device."
+	echo "	--device	Serial number of adb device."
+	echo "	      -s	Serial number of adb device."
 	echo ""
 	echo "	--debug"
 	exit 1
