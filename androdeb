@@ -20,6 +20,10 @@ bash
 ca-certificates
 "
 
+config_full_build() {
+	for f in $(ls $spath/packages); do source packages/$f; done;
+}
+
 # Parse command line parameters
 if [ $# -lt 1 ]; then usage; fi; POSITIONAL=()
 while [[ $# -gt 0 ]]; do key="$1";
@@ -28,12 +32,13 @@ case $key in
     shell) ASHELL=1;     shift || true;     ;;
     remove) REMOVE=1;     shift || true;     ;;
     pull) PULL=1; shift || true; ;;
+    buildtar) PREPARE=1; TARDIR="./"; config_full_build; shift || true; ;;
     --archive) TARF=$2; shift || true; shift || true; ;;
     --tracers) source $spath/packages/tracers; shift || true; ;;
     --compilers) source $spath/packages/compilers; shift || true; ;;
     --editors) source $spath/packages/editors; shift || true; ;;
     --scheduler) source $spath/packages/scheduler; shift || true; ;;
-    --fullbuild) for f in $(ls $spath/packages); do source packages/$f; done; shift || true; ;;
+    --fullbuild) config_full_build; shift || true; ;;
     --download) DOWNLOAD=1; shift || true; ;;
     --bcc) source $spath/packages/bcc; shift || true;     ;;
     --kernelsrc) KERNELSRC="$2"; shift || true;     shift || true;     ;;
