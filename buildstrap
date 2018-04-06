@@ -1,0 +1,44 @@
+#!/bin/bash
+
+ARCH=$1
+DISTRO=$2
+TDIR=$3
+OUT_TMP=$4
+PACKAGES=$5
+
+time qemu-debootstrap --arch $ARCH --include=$(make_csv "$PACKAGES") \
+	$DISTRO $OUT_TMP http://deb.debian.org/debian/
+
+# Some reason debootstrap leaves these mounted
+umount $OUT_TMP/proc/sys/fs/binfmt_misc || true
+umount $OUT_TMP/proc || true
+
+# Make bash the default shell
+chroot $OUT_TMP rm /bin/sh || true
+chroot $OUT_TMP ln -s /bin/bash /bin/sh || true
+cp $spath/addons/bashrc $OUT_TMP/.bashrc
+
+# Cleanup
+rm -rf $OUT_TMP/lib/udev/*
+rm -rf $OUT_TMP/var/lib/apt/lists/*
+rm -rf $OUT_TMP/var/cache/apt/archives/*deb
+rm -rf $OUT_TMP/usr/share/locale/*
+rm -rf $OUT_TMP/usr/lib/share/locale/*
+rm -rf $OUT_TMP/usr/share/doc/*
+rm -rf $OUT_TMP/usr/lib/share/doc/*
+rm -rf $OUT_TMP/usr/share/ieee-data/*
+rm -rf $OUT_TMP/usr/lib/share/ieee-data/*
+rm -rf $OUT_TMP/usr/share/man/*
+rm -rf $OUT_TMP/usr/lib/share/man/*
+
+# Clone BCC if needed
+if [[ ! -z ${INSTALL_BCC+x} ]]; then
+git clone https://github.com/iovisor/bcc.git $TDIR/debian/bcc-master
+cp $spath/bcc/build-bcc.sh $TDIR/debian/bcc-master/; fi
+
+echo "Compressing new filesystem to prepare to push to Android /data/androdeb/"
+tar -zcf $TDIR/deb.tar.gz -C $TDIR debian
+
+chmod -R 0777 $TDIR/
+
+chmod 0777 $TDIR/deb.tar.gz
