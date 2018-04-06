@@ -4,7 +4,6 @@ clang-6.0
 gcc
 rustc
 golang
-nodejs
 libtool
 autoconf
 make
