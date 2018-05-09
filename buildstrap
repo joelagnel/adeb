@@ -8,14 +8,15 @@ ARCH=$1
 DISTRO=$2
 TDIR=$3
 OUT_TMP=$4
-PACKAGES=$5
+PACKAGES="$(make_csv "$5")"
 EXTRA_FILES="$(cat $6)"
 INSTALL_BCC=$7
 SKIP_DEVICE=$8		# Skip any device-specific stages
+MIRROR=$9
 VARIANT="--variant=minbase"
 
 time qemu-debootstrap --arch $ARCH --include=$PACKAGES $VARIANT \
-	$DISTRO $OUT_TMP http://deb.debian.org/debian/
+	$DISTRO $OUT_TMP $MIRROR
 
 # Some reason debootstrap leaves these mounted
 umount $OUT_TMP/proc/sys/fs/binfmt_misc || true

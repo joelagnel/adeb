@@ -31,15 +31,17 @@ on device without having to cripple it.
 Requirements for running
 ------------------------
 Target:
-An ARM64 android N or later device which has "adb root" supported. Typically
-this is a build in a userdebug configuration. Device should have atleast 2 GB
-free space in the data partition. If you would like to use other architectures,
-see the [Other Architectures](https://github.com/joelagnel/adeb/blob/master/README.md#how-to-use-adeb-for-other-architectures-other-than-arm64) section.
+An armhf, arm64, i386 or amd64 Android N or later device which has "adb root"
+supported. Typically this is a build in a userdebug configuration. Device should
+have at least 2 GB free space in the data partition. If you would like to use an
+architecture other than the default of arm64, see the
+[Other Architectures](https://github.com/joelagnel/adeb/blob/master/README.md#how-to-use-adeb-for-other-architectures-other-than-arm64)
+section.
 
 Host:
 A machine running recent Ubuntu or Debian, with 4GB of memory and 4GB free space.
-Host needs debootstrap and qemu-debootstrap packages.
-To install it, run `sudo apt-get install qemu-user-static debootstrap`.
+Host needs the debootstrap and qemu-user-static packages. To install
+these, run `sudo apt-get install debootstrap qemu-user-static`.
 Other distributions may work but they are not tested.
 
 Quick Start Instructions
