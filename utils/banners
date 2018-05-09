@@ -28,6 +28,7 @@ usage() {
 	echo ""
 	echo "	--tempdir	Use a specific temporary directory for build operation"
 	echo "	--buildtar	Local directory to store tarball of androdeb env from device"
+	echo "	--arch		Architecture of distribution (default is arm64)"
 	echo "	--distro	Debian distro to base on (default is buster)"
 	echo "	--device	Serial number of adb device."
 	echo "	      -s	Serial number of adb device."

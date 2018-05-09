@@ -10,9 +10,10 @@ TDIR=$3
 OUT_TMP=$4
 PACKAGES=$5
 INSTALL_BCC=$6
+MIRROR=$7
 
-time qemu-debootstrap --arch $ARCH --include=$(make_csv "$PACKAGES") \
-	$DISTRO $OUT_TMP http://deb.debian.org/debian/
+time qemu-debootstrap --arch $ARCH --include="$(make_csv "$PACKAGES")" \
+	$DISTRO $OUT_TMP $MIRROR
 
 # Some reason debootstrap leaves these mounted
 umount $OUT_TMP/proc/sys/fs/binfmt_misc || true
@@ -37,7 +38,7 @@ rm -rf $OUT_TMP/usr/share/man/*
 rm -rf $OUT_TMP/usr/lib/share/man/*
 
 # Clone BCC if needed
-if [[ ! -z ${INSTALL_BCC+x} ]]; then
+if [[ ! -z ${INSTALL_BCC:+x} ]]; then
 git clone https://github.com/iovisor/bcc.git $TDIR/debian/bcc-master
 cp $spath/bcc/build-bcc.sh $TDIR/debian/bcc-master/; fi
 
