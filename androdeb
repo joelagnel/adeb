@@ -298,11 +298,9 @@ fi
 PACKAGES+="$DEFAULT_PACKAGES"
 c_info "Using temporary directory: $TDIR"
 
-if [[ $EUID -ne 0 ]]; then c_info "The next stage runs as sudo, please enter password if asked."; fi
-
 ex_files=$(mktemp); echo $EXTRA_FILES > $ex_files
 
-sudo $spath/buildstrap $ARCH $DISTRO $TDIR $OUT_TMP "$PACKAGES" \
+$spath/buildstrap $ARCH $DISTRO $TDIR $OUT_TMP "$PACKAGES" \
 		$ex_files $INSTALL_BCC $SKIP_DEVICE $MIRROR
 rm $ex_files
 
