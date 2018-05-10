@@ -182,9 +182,7 @@ fi
 PACKAGES+="$DEFAULT_PACKAGES"
 echo "Using temporary directory: $TDIR"
 
-if [[ $EUID -ne 0 ]]; then echo "The next stage runs as sudo, please enter password if asked."; fi
-
-sudo $spath/buildstrap $ARCH $DISTRO $TDIR $OUT_TMP "$PACKAGES" "$INSTALL_BCC" $MIRROR
+$spath/buildstrap $ARCH $DISTRO $TDIR $OUT_TMP "$PACKAGES" "$INSTALL_BCC" $MIRROR
 
 # Push tar to device and start unpack
 $ADB shell mkdir -p /data/androdeb/
