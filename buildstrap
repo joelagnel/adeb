@@ -11,18 +11,42 @@ OUT_TMP=$4
 PACKAGES=$5
 INSTALL_BCC=$6
 MIRROR=$7
+DISTRO_VERSION=$8
 
-root=sudo
+if [[ ! -z $DISTRO_VERSION ]]; then
+    # Assume non-empty DISTRO_VERSION is Ubuntu; see if there's a base image..
+    echo "Checking for Ubuntu Base image from the web..."; echo ""
+    if [ ! -f $TDIR/ubuntu-base-$DISTRO_VERSION-base-$ARCH.tar.gz ]; then
+        curl -L http://cdimage.ubuntu.com/ubuntu-base/releases/$DISTRO_VERSION/release/ubuntu-base-$DISTRO_VERSION-base-$ARCH.tar.gz \
+            --output $TDIR/ubuntu-base-$DISTRO_VERSION-base-$ARCH.tar.gz; fi
+    if [ -f $TDIR/ubuntu-base-$DISTRO_VERSION-base-$ARCH.tar.gz ]; then
+        time tar -C $OUT_TMP --exclude=dev -xf $TDIR/ubuntu-base-$DISTRO_VERSION-base-$ARCH.tar.gz;
+        mkdir $OUT_TMP/dev; fi; fi
 
-if [ $EUID -ne 0 ]; then echo "The next stage runs as sudo, please enter password if asked."; fi
+if [ ! -f $OUT_TMP/etc/debian_version ]; then
+    root=sudo
 
-# It's easier to just really be root for debootstrap
-time $root qemu-debootstrap --arch $ARCH --include="$(make_csv "$PACKAGES")" \
-	$DISTRO $OUT_TMP $MIRROR
+    if [ $EUID -ne 0 ]; then echo "The next stage runs as sudo, please enter password if asked."; fi
 
-# Some reason debootstrap leaves these mounted
-$root umount $OUT_TMP/proc/sys/fs/binfmt_misc || true
-$root umount $OUT_TMP/proc || true
+    # It's easier to just really be root for debootstrap
+    time $root qemu-debootstrap --arch $ARCH --include="$(make_csv "$PACKAGES")" \
+        $DISTRO $OUT_TMP $MIRROR
+
+    # Some reason debootstrap leaves these mounted
+    $root umount $OUT_TMP/proc/sys/fs/binfmt_misc || true
+    $root umount $OUT_TMP/proc || true
+else
+    root=fakeroot
+
+    # Avoid 'apt-get install' because this requires chroot, which requires root
+    # FIXME: Note, this only works if PACKAGES fully describes the dependency
+    #        chain, and it also only if the postinst scripts for the packages
+    #        are not critical.
+    for PACKAGE in $PACKAGES; do
+        FILE=`cat $OUT_TMP/var/lib/apt/lists/*Packages | grep -e "^Filename:.*/${PACKAGE}_" | cut -d' ' -f2`
+        echo "Fetching ${MIRROR}${FILE}..."; echo ""
+        curl -L ${MIRROR}${FILE} --output $TDIR/`basename $FILE`
+        $root dpkg-deb -x $TDIR/`basename $FILE` $OUT_TMP; done; fi
 
 # Make bash the default shell
 $root ln -sf /bin/bash $OUT_TMP/bin/sh || true

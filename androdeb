@@ -63,6 +63,7 @@ esac
 case $DISTRO in
     buster) ;;
     bionic)
+        DISTRO_VERSION=18.04
         if [ "$ARCH" == "i386" -o "$ARCH" == "amd64" ]; then
             MIRROR=http://archive.ubuntu.com/ubuntu/
         else
@@ -182,7 +183,7 @@ fi
 PACKAGES+="$DEFAULT_PACKAGES"
 echo "Using temporary directory: $TDIR"
 
-$spath/buildstrap $ARCH $DISTRO $TDIR $OUT_TMP "$PACKAGES" "$INSTALL_BCC" $MIRROR
+$spath/buildstrap $ARCH $DISTRO $TDIR $OUT_TMP "$PACKAGES" "$INSTALL_BCC" $MIRROR "$DISTRO_VERSION"
 
 # Push tar to device and start unpack
 $ADB shell mkdir -p /data/androdeb/

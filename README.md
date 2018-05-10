@@ -34,7 +34,7 @@ at least 2 GB free space in the data partition.
 
 Host:
 A machine running recent Ubuntu or Debian, with 4GB of memory and 4GB free space.
-Host needs debootstrap and qemu-user-static packages. To install these,
+Host needs debootstrap, fakeroot and qemu-user-static packages. To install these,
 run `sudo apt-get install debootstrap fakeroot qemu-user-static`.
 Other distributions may work but they are not tested.
 
