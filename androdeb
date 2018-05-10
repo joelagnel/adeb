@@ -17,6 +17,7 @@ FULL=0				# Default to a minimal install
 DOWNLOAD=1			# Default to downloading from web
 SKIP_DEVICE=0			# Skip device preparation
 INSTALL_BCC=0			# Decide if BCC is to be installed
+FOREIGN=0			# Use debootstrap --foreign mode
 
 # Default packages
 PACKAGES=""
@@ -52,6 +53,7 @@ case $key in
     --full) FULL=1; config_full_build; shift || true; ;;
     --arch) ARCH=$2; shift || true; shift || true; ;;
     --distro) DISTRO="$2"; shift || true; shift || true; ;;
+    --foreign) FOREIGN=1; shift || true; ;;
     --archive) TARF=$2; shift || true; shift || true; ;;
     --bcc) source $spath/packages/bcc; shift || true;     ;;
     --kernelsrc) KERNELSRC="$2"; shift || true;     shift || true;     ;;
@@ -301,7 +303,7 @@ c_info "Using temporary directory: $TDIR"
 ex_files=$(mktemp); echo $EXTRA_FILES > $ex_files
 
 $spath/buildstrap $ARCH $DISTRO $TDIR $OUT_TMP "$PACKAGES" \
-		$ex_files $INSTALL_BCC $SKIP_DEVICE $MIRROR
+		$ex_files $INSTALL_BCC $SKIP_DEVICE $MIRROR $FOREIGN
 rm $ex_files
 
 # If we only wanted to prepare a rootfs and don't have

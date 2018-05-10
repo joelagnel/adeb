@@ -40,8 +40,8 @@ section.
 
 Host:
 A machine running recent Ubuntu or Debian, with 4GB of memory and 4GB free space.
-Host needs the debootstrap and qemu-user-static packages. To install
-these, run `sudo apt-get install debootstrap qemu-user-static`.
+Host needs the debootstrap, fakeroot and qemu-user-static packages. To install
+these, run `sudo apt-get install debootstrap fakeroot qemu-user-static`.
 Other distributions may work but they are not tested.
 
 Quick Start Instructions
@@ -157,5 +157,9 @@ example for x86_64 architecture, run:
 ```
 adeb prepare --build --arch amd64 --bcc --kernelsrc /path/to/kernel-source/
 ```
+Normally you want to use --foreign too, especially if your distro's glibc
+version does not match the --distro option. This mode eliminates the need
+for root (chroot) or qemu-debootstrap, but it does cause more setup to be
+done on the device side the first time you enter adeb.
 Note: The --download option ignores the --arch flag. This is because we only
 provide pre-built filesystems for ARM64 at the moment.

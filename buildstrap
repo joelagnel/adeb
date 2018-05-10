@@ -13,14 +13,20 @@ EXTRA_FILES="$(cat $6)"
 INSTALL_BCC=$7
 SKIP_DEVICE=$8		# Skip any device-specific stages
 MIRROR=$9
+shift
+FOREIGN=$9
 VARIANT="--variant=minbase"
 
-root=sudo
+if [ $FOREIGN -eq 1 ]; then
+	debootstrap="debootstrap --foreign"
+	root=fakeroot
+else
+	if [ $EUID -ne 0 ]; then echo "The next stage runs as sudo, please enter password if asked."; fi
+	debootstrap=qemu-debootstrap
+	root=sudo
+fi
 
-if [ $EUID -ne 0 ]; then echo "The next stage runs as sudo, please enter password if asked."; fi
-
-# It's easier to just really be root for debootstrap
-time $root qemu-debootstrap --arch $ARCH --include=$PACKAGES $VARIANT \
+time $root $debootstrap --arch $ARCH --include=$PACKAGES $VARIANT \
 	$DISTRO $OUT_TMP $MIRROR
 
 # Some reason debootstrap leaves these mounted
@@ -63,7 +69,7 @@ else
 fi
 
 # Add a default DNS server
-$root tee -a $OUT_TMP/etc/resolv.conf >/dev/null <<EOF
+$root tee $OUT_TMP/etc/resolv.conf >/dev/null <<EOF
 nameserver 4.2.2.2
 EOF
 
