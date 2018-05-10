@@ -46,7 +46,14 @@ else
         FILE=`cat $OUT_TMP/var/lib/apt/lists/*Packages | grep -e "^Filename:.*/${PACKAGE}_" | cut -d' ' -f2`
         echo "Fetching ${MIRROR}${FILE}..."; echo ""
         curl -L ${MIRROR}${FILE} --output $TDIR/`basename $FILE`
-        $root dpkg-deb -x $TDIR/`basename $FILE` $OUT_TMP; done; fi
+        $root dpkg-deb -x $TDIR/`basename $FILE` $OUT_TMP; done
+
+    # FIXME: Install python-scapy manually because it comes from universe and
+    #        we need to use a version that is not in 18.04 due to a bug.
+    FILE=pool/universe/s/scapy/python-scapy_2.4.0-1_all.deb
+    echo "Fetching ${MIRROR}${FILE}..."; echo ""
+    curl -L ${MIRROR}${FILE} --output $TDIR/`basename $FILE`
+    $root dpkg-deb -x $TDIR/`basename $FILE` $OUT_TMP; fi
 
 # Make bash the default shell
 $root ln -sf /bin/bash $OUT_TMP/bin/sh || true
