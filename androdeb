@@ -34,6 +34,7 @@ case $key in
     pull) PULL=1; shift || true; ;;
     buildtar) PREPARE=1; TARDIR="./"; config_full_build; shift || true; ;;
     --archive) TARF=$2; shift || true; shift || true; ;;
+    --python2) source $spath/packages/python2; shift || true; ;;
     --tracers) source $spath/packages/tracers; shift || true; ;;
     --compilers) source $spath/packages/compilers; shift || true; ;;
     --editors) source $spath/packages/editors; shift || true; ;;

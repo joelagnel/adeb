@@ -65,6 +65,10 @@ $root rm -rf $OUT_TMP/usr/lib/share/ieee-data/*
 $root rm -rf $OUT_TMP/usr/share/man/*
 $root rm -rf $OUT_TMP/usr/lib/share/man/*
 
+# Make python2.7 it the default python (if present)
+if [ -f $OUT_TMP/usr/bin/python2.7 ]; then
+    $root ln -sf /usr/bin/python2.7 $OUT_TMP/usr/bin/python; fi
+
 # Clone BCC if needed
 if [[ ! -z ${INSTALL_BCC:+x} ]]; then
 git clone https://github.com/iovisor/bcc.git $TDIR/debian/bcc-master

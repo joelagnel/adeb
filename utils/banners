@@ -12,6 +12,7 @@ usage() {
 	echo "	pull		Git pull androdeb to update it on your host"
 	echo ""
 	echo "	prepare		Prepare the device (when running for the first time)"
+	echo "	--python2	Enable minimal python2 interpreter"
 	echo "	--tracers	Enable tracing packages (perf and trace-cmd)"
 	echo "	--compilers	Enable compilers on the FS (gcc and clang)"
 	echo "	--editors	Enable vim, emacs and git packages"
