@@ -11,7 +11,7 @@ source $spath/utils/android
 source $spath/utils/banners
 
 # Set default vars
-DISTRO=buster; ARCH=arm64
+DISTRO=buster; ARCH=arm64; MIRROR=http://deb.debian.org/debian/
 ADB="adb"
 
 # Default packages
@@ -34,6 +34,7 @@ case $key in
     pull) PULL=1; shift || true; ;;
     buildtar) PREPARE=1; TARDIR="./"; config_full_build; shift || true; ;;
     --archive) TARF=$2; shift || true; shift || true; ;;
+    --python2) source $spath/packages/python2; shift || true; ;;
     --tracers) source $spath/packages/tracers; shift || true; ;;
     --compilers) source $spath/packages/compilers; shift || true; ;;
     --editors) source $spath/packages/editors; shift || true; ;;
@@ -46,9 +47,30 @@ case $key in
     --buildtar) TARDIR="$2"; shift || true;     shift || true;     ;;
     --device|-s) ADB="$ADB -s $2"; shift || true; shift || true; ;;
     --debug) set -x; shift || true; ;;
+    --arch) ARCH="$2"; shift || true; shift || true; ;;
+    --distro) DISTRO="$2"; shift || true; shift || true; ;;
     *) echo "Unknown option ($1)"; usage; ;;
 esac
 done
+
+case $ARCH in
+    i386)  ;;
+    amd64) ;;
+    arm64) ;;
+    armhf) ;;
+    *) echo "Unsupported arch ($ARCH)"; ;;
+esac
+
+case $DISTRO in
+    buster) ;;
+    bionic)
+        DISTRO_VERSION=18.04
+        if [ "$ARCH" == "i386" -o "$ARCH" == "amd64" ]; then
+            MIRROR=http://archive.ubuntu.com/ubuntu/
+        else
+            MIRROR=http://ports.ubuntu.com/; fi ;;
+    *) echo "Unusupported distro ($DISTRO)"; ;;
+esac
 
 if [ ! -z "$PULL" ]; then
 	echo "Updating androdeb by git pull"
@@ -162,9 +184,7 @@ fi
 PACKAGES+="$DEFAULT_PACKAGES"
 echo "Using temporary directory: $TDIR"
 
-if [[ $EUID -ne 0 ]]; then echo "The next stage runs as sudo, please enter password if asked."; fi
-
-sudo $spath/buildstrap $ARCH $DISTRO $TDIR $OUT_TMP "$(make_csv "$PACKAGES")" $INSTALL_BCC
+$spath/buildstrap $ARCH $DISTRO $TDIR $OUT_TMP "$PACKAGES" "$INSTALL_BCC" $MIRROR "$DISTRO_VERSION"
 
 # Push tar to device and start unpack
 $ADB shell mkdir -p /data/androdeb/

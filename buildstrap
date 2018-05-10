@@ -10,40 +10,78 @@ TDIR=$3
 OUT_TMP=$4
 PACKAGES=$5
 INSTALL_BCC=$6
+MIRROR=$7
+DISTRO_VERSION=$8
 
-time qemu-debootstrap --arch $ARCH --include=$(make_csv "$PACKAGES") \
-	$DISTRO $OUT_TMP http://deb.debian.org/debian/
+if [[ ! -z $DISTRO_VERSION ]]; then
+    # Assume non-empty DISTRO_VERSION is Ubuntu; see if there's a base image..
+    echo "Checking for Ubuntu Base image from the web..."; echo ""
+    if [ ! -f $TDIR/ubuntu-base-$DISTRO_VERSION-base-$ARCH.tar.gz ]; then
+        curl -L http://cdimage.ubuntu.com/ubuntu-base/releases/$DISTRO_VERSION/release/ubuntu-base-$DISTRO_VERSION-base-$ARCH.tar.gz \
+            --output $TDIR/ubuntu-base-$DISTRO_VERSION-base-$ARCH.tar.gz; fi
+    if [ -f $TDIR/ubuntu-base-$DISTRO_VERSION-base-$ARCH.tar.gz ]; then
+        time tar -C $OUT_TMP --exclude=dev -xf $TDIR/ubuntu-base-$DISTRO_VERSION-base-$ARCH.tar.gz;
+        mkdir $OUT_TMP/dev; fi; fi
 
-# Some reason debootstrap leaves these mounted
-umount $OUT_TMP/proc/sys/fs/binfmt_misc || true
-umount $OUT_TMP/proc || true
+if [ ! -f $OUT_TMP/etc/debian_version ]; then
+    root=sudo
+
+    if [ $EUID -ne 0 ]; then echo "The next stage runs as sudo, please enter password if asked."; fi
+
+    # It's easier to just really be root for debootstrap
+    time $root qemu-debootstrap --arch $ARCH --include="$(make_csv "$PACKAGES")" \
+        $DISTRO $OUT_TMP $MIRROR
+
+    # Some reason debootstrap leaves these mounted
+    $root umount $OUT_TMP/proc/sys/fs/binfmt_misc || true
+    $root umount $OUT_TMP/proc || true
+else
+    root=fakeroot
+
+    # Avoid 'apt-get install' because this requires chroot, which requires root
+    # FIXME: Note, this only works if PACKAGES fully describes the dependency
+    #        chain, and it also only if the postinst scripts for the packages
+    #        are not critical.
+    for PACKAGE in $PACKAGES; do
+        FILE=`cat $OUT_TMP/var/lib/apt/lists/*Packages | grep -e "^Filename:.*/${PACKAGE}_" | cut -d' ' -f2`
+        echo "Fetching ${MIRROR}${FILE}..."; echo ""
+        curl -L ${MIRROR}${FILE} --output $TDIR/`basename $FILE`
+        $root dpkg-deb -x $TDIR/`basename $FILE` $OUT_TMP; done
+
+    # FIXME: Install python-scapy manually because it comes from universe and
+    #        we need to use a version that is not in 18.04 due to a bug.
+    FILE=pool/universe/s/scapy/python-scapy_2.4.0-1_all.deb
+    echo "Fetching ${MIRROR}${FILE}..."; echo ""
+    curl -L ${MIRROR}${FILE} --output $TDIR/`basename $FILE`
+    $root dpkg-deb -x $TDIR/`basename $FILE` $OUT_TMP; fi
 
 # Make bash the default shell
-chroot $OUT_TMP rm /bin/sh || true
-chroot $OUT_TMP ln -s /bin/bash /bin/sh || true
-cp $spath/addons/bashrc $OUT_TMP/.bashrc
+$root ln -sf /bin/bash $OUT_TMP/bin/sh || true
+$root cp $spath/addons/bashrc $OUT_TMP/.bashrc
 
 # Cleanup
-rm -rf $OUT_TMP/lib/udev/*
-rm -rf $OUT_TMP/var/lib/apt/lists/*
-rm -rf $OUT_TMP/var/cache/apt/archives/*deb
-rm -rf $OUT_TMP/usr/share/locale/*
-rm -rf $OUT_TMP/usr/lib/share/locale/*
-rm -rf $OUT_TMP/usr/share/doc/*
-rm -rf $OUT_TMP/usr/lib/share/doc/*
-rm -rf $OUT_TMP/usr/share/ieee-data/*
-rm -rf $OUT_TMP/usr/lib/share/ieee-data/*
-rm -rf $OUT_TMP/usr/share/man/*
-rm -rf $OUT_TMP/usr/lib/share/man/*
+$root rm -rf $OUT_TMP/lib/udev/*
+$root rm -rf $OUT_TMP/var/lib/apt/lists/*
+$root rm -rf $OUT_TMP/var/cache/apt/archives/*deb
+$root rm -rf $OUT_TMP/usr/share/locale/*
+$root rm -rf $OUT_TMP/usr/lib/share/locale/*
+$root rm -rf $OUT_TMP/usr/share/doc/*
+$root rm -rf $OUT_TMP/usr/lib/share/doc/*
+$root rm -rf $OUT_TMP/usr/share/ieee-data/*
+$root rm -rf $OUT_TMP/usr/lib/share/ieee-data/*
+$root rm -rf $OUT_TMP/usr/share/man/*
+$root rm -rf $OUT_TMP/usr/lib/share/man/*
+
+# Make python2.7 it the default python (if present)
+if [ -f $OUT_TMP/usr/bin/python2.7 ]; then
+    $root ln -sf /usr/bin/python2.7 $OUT_TMP/usr/bin/python; fi
 
 # Clone BCC if needed
-if [[ ! -z ${INSTALL_BCC+x} ]]; then
+if [[ ! -z ${INSTALL_BCC:+x} ]]; then
 git clone https://github.com/iovisor/bcc.git $TDIR/debian/bcc-master
 cp $spath/bcc/build-bcc.sh $TDIR/debian/bcc-master/; fi
 
 echo "Compressing new filesystem to prepare to push to Android /data/androdeb/"
-tar -zcf $TDIR/deb.tar.gz -C $TDIR debian
+$root tar -zpcf $TDIR/deb.tar.gz -C $TDIR debian
 
-chmod -R 0777 $TDIR/
-
-chmod 0777 $TDIR/deb.tar.gz
+$root chown --reference=$TDIR $TDIR/deb.tar.gz
