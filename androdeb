@@ -1,6 +1,6 @@
 #!/bin/bash -e
 #
-# (c) Joel Fernandes <joel@linuxinternals.org>
+# (c) Joel Fernandes <joel@joelfernandes.org>
 
 VERSION=v0.98
 
@@ -42,6 +42,7 @@ case $key in
     --download) DOWNLOAD=1; shift || true; ;;
     --bcc) source $spath/packages/bcc; shift || true;     ;;
     --kernelsrc) KERNELSRC="$2"; shift || true;     shift || true;     ;;
+    --kernel-headers-targz) KERNELHDRS=$2; shift || true;	shift || true;	;;
     --tempdir) TDIR="$2"; shift || true;     shift || true;     ;;
     --buildtar) TARDIR="$2"; shift || true;     shift || true;     ;;
     --device|-s) ADB="$ADB -s $2"; shift || true; shift || true; ;;
@@ -58,7 +59,7 @@ if [ ! -z "$PULL" ]; then
 	exit 0
 fi
 
-if [ ! -z "$PREPARE" ] && [ -z "$DOWNLOAD" ] && [ -z "$TARF" ] && [ -z "$PACKAGES" ] && [ -z "$KERNELSRC" ]; then
+if [ ! -z "$PREPARE" ] && [ -z "$DOWNLOAD" ] && [ -z "$TARF" ] && [ -z "$PACKAGES" ] && [ -z "$KERNELSRC" ] && [ -z "$KERNELHDRS" ]; then
 	echo "Need to specifify something to prepare, or try: ./andrdeb prepare --download"; usage; fi
 
 if [[ ! -z ${TARDIR+x} ]] && [[ ! -d $TARDIR ]]; then die 7 "Tar dir specified doesn't exist"; fi
@@ -107,6 +108,18 @@ function push_unpack_headers() {
 	$ADB shell rm /data/androdeb/kh.tgz
 }
 
+function push_unpack_tarred_headers() {
+	die_if_no_androdeb "Couldn't update headers."
+
+	$ADB shell rm -rf /data/androdeb/debian/kernel-headers/
+	$ADB shell mkdir  /data/androdeb/debian/kernel-headers/
+	$ADB push $1 /data/androdeb/
+	echo "Storing kernel headers into androdeb root directory"
+	$ADB shell tar -xvf /data/androdeb/$(basename $1) -C /data/androdeb/debian/ > /dev/null
+
+	$ADB shell rm /data/androdeb/$(basename $1)
+}
+
 function all_done_banner() {
 	echo "All done! Run \"androdeb shell\" to enter environment"
 }
@@ -114,9 +127,11 @@ function all_done_banner() {
 # Prepare is the last command checked
 if [ -z "$PREPARE" ]; then usage; fi
 
-if [ ! -z "$TARF" ] && [ ! -f $TARF ] && [ -z "$DOWNLOAD" ]; then die 7 "archive provided doesn't exist"; fi
+if [ ! -z "$TARF" ] && [ ! -f $TARF ] && [ -z "$DOWNLOAD" ]; then die 5 "archive provided doesn't exist"; fi
 
-if [ ! -z "$KERNELSRC" ] && [ ! -d $KERNELSRC ]; then die 5 "Kernel source directory provided doesn't exist"; fi
+if [ ! -z "$KERNELSRC" ] && [ ! -d $KERNELSRC ]; then die 6 "Kernel source directory provided doesn't exist"; fi
+
+if [ ! -z "$KERNELHDRS" ] && [ ! -f $KERNELHDRS ]; then die 7 "Kernel headers tar.gz doesn't exist"; fi
 
 print_prepare_banner
 
@@ -132,6 +147,17 @@ if [ ! -z "$DOWNLOAD" ]; then
    TARF=$TDIR_ABS/androdeb-fs.tgz; fi
 
 OUT_TMP=$TDIR/debian; rm -rf $OUT_TMP; mkdir -p $OUT_TMP
+
+# Unpack the supplied kernel headers tar.gz directly into androdeb root
+if [ ! -z "$KERNELHDRS" ]; then
+	echo "Building updating kernel headers from supplied tar.gz ($KERNELHDRS)"
+
+	# Is header tar gz update the only thing left to do?
+	if [[ -z "$PACKAGES" ]] && [[ -z "$TARF" ]] && [[ -z "$KERNELSRC" ]] ; then
+		push_unpack_tarred_headers $KERNELHDRS; do_cleanup; all_done_banner; exit 0; fi
+
+	tar -xvf $KERNELHDRS -C $OUT_TMP/ > /dev/null
+fi
 
 # Package kernel headers
 if [ ! -z "$KERNELSRC" ]; then
@@ -154,6 +180,7 @@ if [ ! -z "$TARF" ]; then
 	$ADB push $spath/addons/* /data/androdeb/
 	$ADB shell /data/androdeb/device-unpack
 
+	if [ ! -z "$KERNELHDRS" ]; then push_unpack_tarred_headers $KERNELHDRS; fi
 	if [ ! -z "$KERNELSRC" ]; then push_unpack_headers; fi
 
 	do_cleanup; all_done_banner; exit 0
