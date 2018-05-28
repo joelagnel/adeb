@@ -21,7 +21,7 @@ ca-certificates
 "
 
 config_full_build() {
-	for f in $(ls $spath/packages); do source packages/$f; done;
+	for f in $(ls $spath/packages); do source $spath/packages/$f; done;
 }
 
 # Parse command line parameters
