@@ -124,3 +124,10 @@ can be used later.
 ```
 androdeb prepare --archive /path/androdeb-fs.tgz
 ```
+
+### Build a standalone raw EXT4 image out of the FS:
+```
+androdeb prepare --buildimage /path/to/image.img
+```
+This can then be passed to Qemu as -hda. Note: This option doesn't need a
+device connected.

@@ -1,0 +1,11 @@
+#!/bin/bash
+set -e
+
+# Given a path, make an ext4 image out of it, store it in $2
+dd if=/dev/zero of=$2 bs=4k count=$((256 * 1024 * 2))
+mkfs.ext4 $2
+
+OUT=`mktemp -d`
+mount -o loop $2 $OUT/
+rsync -ra $1/ $OUT/
+umount $OUT/

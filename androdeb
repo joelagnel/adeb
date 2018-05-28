@@ -47,6 +47,7 @@ case $key in
     --tempdir) TDIR="$2"; shift || true;     shift || true;     ;;
     --buildtar) TARDIR="$2"; shift || true;     shift || true;     ;;
     --device|-s) ADB="$ADB -s $2"; shift || true; shift || true; ;;
+    --build-image) BUILD_IMAGE=$2; shift || true; shift || true; ;;
     --debug) set -x; shift || true; ;;
     *) echo "Unknown option ($1)"; usage; ;;
 esac
@@ -60,17 +61,26 @@ if [ ! -z "$PULL" ]; then
 	exit 0
 fi
 
-if [ ! -z "$PREPARE" ] && [ -z "$DOWNLOAD" ] && [ -z "$TARF" ] && [ -z "$PACKAGES" ] && [ -z "$KERNELSRC" ] && [ -z "$KERNELHDRS" ]; then
+if [ -z "$PACKAGES" ]; then
+	echo "No packages specified, so I'm going to do a --fullbuild"
+	config_full_build
+fi
+
+if [ ! -z "$PREPARE" ] && [ -z "$DOWNLOAD" ] && [ -z "$TARF" ] &&
+	[ -z "$KERNELSRC" ] && [ -z "$KERNELHDRS" ] &&
+	[ -z "$BUILD_IMAGE" ]; then
 	echo "Need to specifify something to prepare, or try: ./andrdeb prepare --download"; usage; fi
 
 if [[ ! -z ${TARDIR+x} ]] && [[ ! -d $TARDIR ]]; then die 7 "Tar dir specified doesn't exist"; fi
 
+if [ -z "$BUILD_IMAGE" ]; then
 do_adb_root "$ADB" || die 3 "adb root failed, make sure:
 - If multiple devices connected, provide --device <serialno>  (or -s <serialno>)
 - Try to run \"adb root\" manually and see if it works. Typically this needs a userdebug build.
 
 Note: adb can be typically obtained using the android-tools-adb or the adb
 packages on your distro, or by installing the Android SDK."
+fi
 
 if [ ! -z "$REMOVE" ]; then
 	die_if_no_androdeb "Nothing to remove."
@@ -154,7 +164,7 @@ if [ ! -z "$KERNELHDRS" ]; then
 	echo "Building updating kernel headers from supplied tar.gz ($KERNELHDRS)"
 
 	# Is header tar gz update the only thing left to do?
-	if [[ -z "$PACKAGES" ]] && [[ -z "$TARF" ]] && [[ -z "$KERNELSRC" ]] ; then
+	if [[ -z "$PACKAGES" ]] && [[ -z "$TARF" ]] && [[ -z "$BUILD_IMAGE" ]] && [[ -z "$KERNELSRC" ]] ; then
 		push_unpack_tarred_headers $KERNELHDRS; do_cleanup; all_done_banner; exit 0; fi
 
 	tar -xvf $KERNELHDRS -C $OUT_TMP/ > /dev/null
@@ -166,7 +176,7 @@ if [ ! -z "$KERNELSRC" ]; then
 	$spath/bcc/build-kheaders-targz.sh ${KERNELSRC} $TDIR_ABS/kh.tgz > /dev/null
 
 	# Is header update the only thing left to do?
-	if [[ -z "$PACKAGES" ]] && [[ -z "$TARF" ]]; then
+	if [[ -z "$PACKAGES" ]] && [[ -z "$BUILD_IMAGE" ]] && [[ -z "$TARF" ]]; then
 		push_unpack_headers; do_cleanup; all_done_banner; exit 0; fi
 
 	mkdir $OUT_TMP/kernel-headers
@@ -192,7 +202,19 @@ echo "Using temporary directory: $TDIR"
 
 if [[ $EUID -ne 0 ]]; then echo "The next stage runs as sudo, please enter password if asked."; fi
 
-sudo $spath/buildstrap $ARCH $DISTRO $TDIR $OUT_TMP "$(make_csv "$PACKAGES")" $INSTALL_BCC
+SKIP_COMPRESS=0; if [ ! -z "$BUILD_IMAGE" ]; then SKIP_COMPRESS=1; fi
+
+sudo $spath/buildstrap $ARCH $DISTRO $TDIR $OUT_TMP "$(make_csv "$PACKAGES")" $INSTALL_BCC $SKIP_COMPRESS
+
+# If we only wanted to prepare a rootfs and don't have
+# a device connected, then just echo that and skip cleanup
+if [ ! -z "$BUILD_IMAGE" ]; then
+	echo "For --build-image, only the image is built"
+	echo "Note that BCC will not be built on the image, you've to do it yourself"
+	sudo $spath/buildimage $OUT_TMP $(dirname $BUILD_IMAGE)/$(basename $BUILD_IMAGE)
+	sudo chmod a+rw $(dirname $BUILD_IMAGE)/$(basename $BUILD_IMAGE)
+	do_cleanup; echo "Your .img has been built! Enjoy!"; exit 0
+fi
 
 # Push tar to device and start unpack
 $ADB shell mkdir -p /data/androdeb/
