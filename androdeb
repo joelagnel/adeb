@@ -33,6 +33,7 @@ case $key in
     remove) REMOVE=1;     shift || true;     ;;
     pull) PULL=1; shift || true; ;;
     buildtar) PREPARE=1; TARDIR="./"; config_full_build; shift || true; ;;
+    --arch) ARCH=$2; shift || true; shift || true; ;;
     --archive) TARF=$2; shift || true; shift || true; ;;
     --tracers) source $spath/packages/tracers; shift || true; ;;
     --compilers) source $spath/packages/compilers; shift || true; ;;

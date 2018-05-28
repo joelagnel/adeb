@@ -33,6 +33,7 @@ usage() {
 	echo "	      -s	Serial number of adb device."
 	echo ""
 	echo "	--debug"
+	echo "	--arch		Specify an ARCH to build for (default arm64)"
 	exit 1
 }
 
