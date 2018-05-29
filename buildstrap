@@ -9,8 +9,9 @@ DISTRO=$2
 TDIR=$3
 OUT_TMP=$4
 PACKAGES=$5
-INSTALL_BCC=$6
-SKIP_COMPRESS=$7
+EXTRA_FILES=$6
+INSTALL_BCC=$7
+SKIP_COMPRESS=$8
 
 time qemu-debootstrap --arch $ARCH --include=$(make_csv "$PACKAGES") \
 	$DISTRO $OUT_TMP http://deb.debian.org/debian/
@@ -23,6 +24,11 @@ umount $OUT_TMP/proc || true
 chroot $OUT_TMP rm /bin/sh || true
 chroot $OUT_TMP ln -s /bin/bash /bin/sh || true
 cp $spath/addons/bashrc $OUT_TMP/.bashrc
+
+for f in $EXTRA_FILES; do
+	if [ $f == "none" ]; then continue; fi
+	cp $f $OUT_TMP/
+done
 
 # Cleanup
 rm -rf $OUT_TMP/lib/udev/*
