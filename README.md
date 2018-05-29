@@ -17,8 +17,10 @@ ship git, and have support to run apt-get to get any missing development package
 from the web.
 
 3. Using these one can run popular tools such as BCC that are difficult to run
-in an Android environment due to lack of packages, dependencies and cross-compilation
-needed for their operation.
+in an Android environment due to lack of packages, dependencies and
+cross-compilation needed for their operation. [Check BCC on Android using
+androdeb](https://github.com/joelagnel/androdeb/blob/master/BCC.md) for more
+information on that.
 
 4. No more crippled tools: Its often a theme to build a static binary with
 features disabled, because you couldn't cross-compile the feature's dependencies. One
@@ -30,7 +32,8 @@ Requirements for running
 Target:
 An ARM64 android N or later device which has "adb root" supported. Typically
 this is a build in a userdebug configuration. Device should have atleast 2 GB
-free space in the data partition.
+free space in the data partition. If you would like to use other architectures,
+see the [Other Architectures](https://github.com/joelagnel/androdeb/blob/master/README.md#how-to-use-androdeb-for-other-architectures-other-than-arm64) section.
 
 Host:
 A machine running recent Ubuntu or Debian, with 4GB of memory and 4GB free space.
@@ -131,3 +134,13 @@ androdeb prepare --buildimage /path/to/image.img
 ```
 This can then be passed to Qemu as -hda. Note: This option doesn't need a
 device connected.
+
+### How to use androdeb for other Architectures (other than ARM64)
+By default androdeb assumes the target Android device is based on ARM64
+processor architecture. For other architectures, use the --arch option. For
+example for x86_64 architecture, run:
+```
+androdeb prepare --arch amd64 --bcc --kernelsrc /path/to/kernel-source/
+```
+Note: The --download option ignores the --arch flag. This is because we only
+provide pre-built filesystems for ARM64 at the moment.
