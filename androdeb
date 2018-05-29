@@ -61,7 +61,7 @@ if [ ! -z "$PULL" ]; then
 	exit 0
 fi
 
-if [ -z "$PACKAGES" ]; then
+if [ -z "$ASHELL" ] && [ -z "$PACKAGES" ]; then
 	echo "No packages specified, so I'm going to build/install all packages (--fullbuild)"
 	config_full_build
 fi
