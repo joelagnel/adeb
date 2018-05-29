@@ -28,11 +28,10 @@ config_full_build() {
 if [ $# -lt 1 ]; then usage; fi; POSITIONAL=()
 while [[ $# -gt 0 ]]; do key="$1";
 case $key in
-    prepare) PREPARE=1;     shift || true;    ;;
+    prepare) PREPARE=1;  shift || true;    ;;
     shell) ASHELL=1;     shift || true;     ;;
     remove) REMOVE=1;     shift || true;     ;;
     pull) PULL=1; shift || true; ;;
-    buildtar) PREPARE=1; TARDIR="./"; config_full_build; shift || true; ;;
     --arch) ARCH=$2; shift || true; shift || true; ;;
     --archive) TARF=$2; shift || true; shift || true; ;;
     --tracers) source $spath/packages/tracers; shift || true; ;;
@@ -62,14 +61,9 @@ if [ ! -z "$PULL" ]; then
 fi
 
 if [ -z "$PACKAGES" ]; then
-	echo "No packages specified, so I'm going to do a --fullbuild"
+	echo "No packages specified, so I'm going to build/install all packages (--fullbuild)"
 	config_full_build
 fi
-
-if [ ! -z "$PREPARE" ] && [ -z "$DOWNLOAD" ] && [ -z "$TARF" ] &&
-	[ -z "$KERNELSRC" ] && [ -z "$KERNELHDRS" ] &&
-	[ -z "$BUILD_IMAGE" ]; then
-	echo "Need to specifify something to prepare, or try: ./andrdeb prepare --download"; usage; fi
 
 if [[ ! -z ${TARDIR+x} ]] && [[ ! -d $TARDIR ]]; then die 7 "Tar dir specified doesn't exist"; fi
 
