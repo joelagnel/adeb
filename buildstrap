@@ -9,11 +9,11 @@ DISTRO=$2
 TDIR=$3
 OUT_TMP=$4
 PACKAGES=$5
-EXTRA_FILES=$6
+EXTRA_FILES=$(echo $6 | base64 -d)
 INSTALL_BCC=$7
 SKIP_COMPRESS=$8
 
-time qemu-debootstrap --arch $ARCH --include=$(make_csv "$PACKAGES") \
+time qemu-debootstrap --arch $ARCH --include=$PACKAGES \
 	$DISTRO $OUT_TMP http://deb.debian.org/debian/
 
 # Some reason debootstrap leaves these mounted

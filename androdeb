@@ -15,10 +15,9 @@ DISTRO=buster; ARCH=arm64
 ADB="adb"
 
 # Default packages
-DEFAULT_PACKAGES+="\
-bash
-ca-certificates
-"
+DEFAULT_PACKAGES+="bash
+ca-certificates"
+
 EXTRA_FILES="none"
 
 config_full_build() {
@@ -199,8 +198,9 @@ if [[ $EUID -ne 0 ]]; then echo "The next stage runs as sudo, please enter passw
 
 SKIP_COMPRESS=0; if [ ! -z "$BUILD_IMAGE" ]; then SKIP_COMPRESS=1; fi
 
-sudo $spath/buildstrap $ARCH $DISTRO $TDIR $OUT_TMP "$(make_csv "$PACKAGES")" "$(make_csv "$EXTRA_FILES")"\
-	$INSTALL_BCC $SKIP_COMPRESS
+sudo $spath/buildstrap $ARCH $DISTRO $TDIR $OUT_TMP \
+		"$(make_csv "$PACKAGES")"\
+		"$(echo "$EXTRA_FILES" | base64)" $INSTALL_BCC $SKIP_COMPRESS
 
 # If we only wanted to prepare a rootfs and don't have
 # a device connected, then just echo that and skip cleanup

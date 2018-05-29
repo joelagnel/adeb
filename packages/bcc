@@ -1,4 +1,4 @@
-PACKAGES+="\
+PACKAGES+="
 llvm-6.0-dev
 libclang-6.0-dev
 libelf-dev
@@ -22,7 +22,7 @@ python-netaddr
 python-pyroute2
 "
 
-EXTRA_FILES+="\
+EXTRA_FILES+="
 bcc/criticalstat.py
 "
 
