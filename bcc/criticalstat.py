@@ -8,6 +8,8 @@ from bcc import BPF
 import argparse
 import ctypes as ct
 import sys
+import subprocess
+import os.path
 
 examples=""
 
@@ -36,6 +38,23 @@ if args.irqoff:
 elif args.preemptoff:
     preemptoff = True
     irqoff = False
+    
+debugfs_path = subprocess.Popen("cat /proc/mounts | grep -w debugfs | awk '{print $2}'",
+                    shell=True, stdout=subprocess.PIPE).stdout.read().split("\n")[0]
+
+if debugfs_path == "":
+    print("ERROR: Unable to find debugfs mount point");
+    sys.exit(0);
+
+trace_path = debugfs_path + "/tracing/events/preemptirq/";
+
+if (not os.path.exists(trace_path + "irq_disable") or
+   not os.path.exists(trace_path + "irq_enable") or
+   not os.path.exists(trace_path + "preempt_disable") or
+   not os.path.exists(trace_path + "preempt_enable")):
+    print("ERROR: required tracing events are not available\n" + 
+        "Make sure the kernel is built with CONFIG_DEBUG_PREEMPT and CONFIG_PREEMPTIRQ_EVENTS enabled")
+    sys.exit(0)
 
 bpf_text = """
 #include <uapi/linux/ptrace.h>
