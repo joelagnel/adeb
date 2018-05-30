@@ -6,15 +6,18 @@ Introduction
 BCC is a compiler and a toolkit, containing powerful kernel tracing tools that
 trace at the lowest levels, including adding hooks to functions in kernel space
 and user space to deeply understand system behavior while being low in
-overhead. [Here's a presentation with
-Overview](http://www.joelfernandes.org/resources/bcc-ospm.pdf) and visit [BCC
-project page](https://github.com/iovisor/bcc) for official BCC documentation.
+overhead. [Here's a presentation with an
+overview](http://www.joelfernandes.org/resources/bcc-ospm.pdf) and visit [BCC's
+project page](https://github.com/iovisor/bcc) for the official BCC
+documentation.
 
 Quick Start
 -----------
 androdeb is the primary vehicle for running BCC on Android. It supports
 preparing the target Android device with necessary kernel headers, cloning and
-building BCC on device, and other setup.
+building BCC on device, and other setup. Take a look a quick look at [androdeb
+README](https://github.com/joelagnel/androdeb/blob/master/README.md) so that
+you're familiar with what it is.
 
 For setting up BCC on your Android device, you need the target device's kernel
 source and the sources should be built atleast once in-tree. Once it is built,
