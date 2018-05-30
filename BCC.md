@@ -135,20 +135,44 @@ Exception: Failed to load BPF program do_count: Invalid argument
 
 * Issue 3: `CONFIG_BPF_SYSCALL` isn't enabled.
 
-Symptom: This will result in an error like the following:
+Symptom: This may result in a compilation error like the following:
 ```
+root@localhost:/# cachetop
 Traceback (most recent call last):
   File "/usr/share/bcc/tools/cachetop", line 263, in <module>
     curses.wrapper(handle_loop, args)
   File "/usr/lib/python2.7/curses/wrapper.py", line 43, in wrapper
     return func(stdscr, *args, **kwds)
-  File "/usr/share/bcc/tools/cachetop", line 172, in handle_loop
-    b.attach_kprobe(event="add_to_page_cache_lru", fn_name="do_count")
-  File "/usr/lib/python2.7/dist-packages/bcc/__init__.py", line 543, in
-attach_kprobe
-    fn = self.load_func(fn_name, BPF.KPROBE)
-  File "/usr/lib/python2.7/dist-packages/bcc/__init__.py", line 355, in
-load_func
-    (func_name, errstr))
-Exception: Failed to load BPF program do_count: Invalid argument
+  File "/usr/share/bcc/tools/cachetop", line 171, in handle_loop
+    b = BPF(text=bpf_text)
+  File "/usr/lib/python2.7/dist-packages/bcc/__init__.py", line 297, in __init__
+    raise Exception("Failed to compile BPF text:\n%s" % text)
+Exception: Failed to compile BPF text:
+
+
+    #include <uapi/linux/ptrace.h>
+    struct key_t {
+        u64 ip;
+        u32 pid;
+        u32 uid;
+        char comm[16];
+    };
+
+    BPF_HASH(counts, struct key_t);
+
+    int do_count(struct pt_regs *ctx) {
+        struct key_t key = {};
+        u64 zero = 0 , *val;
+        u64 pid = bpf_get_current_pid_tgid();
+        u32 uid = bpf_get_current_uid_gid();
+
+        key.ip = PT_REGS_IP(ctx);
+        key.pid = pid & 0xFFFFFFFF;
+        key.uid = uid & 0xFFFFFFFF;
+        bpf_get_current_comm(&(key.comm), 16);
+
+        val = counts.lookup_or_init(&key, &zero);  // update counter
+        (*val)++;
+        return 0;
+    }
 ```
