@@ -81,6 +81,8 @@ provide pre-built filesystems for ARM64 at the moment.
 
 Common Issues
 -------------
+Here are some common issues you may face when running different BCC tools.
+
 * Issue 1: Headers are missing on the target device.
 
 Symptom: This will usually result in an error like the following:
@@ -109,4 +111,44 @@ Exception: Failed to compile BPF text:
 #include <linux/sched.h>                                                                                                                                                                 
 
 extern char _stext[];
+```
+
+* Issue 2: `CONFIG_KPROBES` isn't enabled.
+
+Symptom: This will result in an error like the following:
+```
+Traceback (most recent call last):
+  File "/usr/share/bcc/tools/cachetop", line 263, in <module>
+    curses.wrapper(handle_loop, args)
+  File "/usr/lib/python2.7/curses/wrapper.py", line 43, in wrapper
+    return func(stdscr, *args, **kwds)
+  File "/usr/share/bcc/tools/cachetop", line 172, in handle_loop
+    b.attach_kprobe(event="add_to_page_cache_lru", fn_name="do_count")
+  File "/usr/lib/python2.7/dist-packages/bcc/__init__.py", line 543, in
+attach_kprobe
+    fn = self.load_func(fn_name, BPF.KPROBE)
+  File "/usr/lib/python2.7/dist-packages/bcc/__init__.py", line 355, in
+load_func
+    (func_name, errstr))
+Exception: Failed to load BPF program do_count: Invalid argument
+```
+
+* Issue 3: `CONFIG_BPF_SYSCALL` isn't enabled.
+
+Symptom: This will result in an error like the following:
+```
+Traceback (most recent call last):
+  File "/usr/share/bcc/tools/cachetop", line 263, in <module>
+    curses.wrapper(handle_loop, args)
+  File "/usr/lib/python2.7/curses/wrapper.py", line 43, in wrapper
+    return func(stdscr, *args, **kwds)
+  File "/usr/share/bcc/tools/cachetop", line 172, in handle_loop
+    b.attach_kprobe(event="add_to_page_cache_lru", fn_name="do_count")
+  File "/usr/lib/python2.7/dist-packages/bcc/__init__.py", line 543, in
+attach_kprobe
+    fn = self.load_func(fn_name, BPF.KPROBE)
+  File "/usr/lib/python2.7/dist-packages/bcc/__init__.py", line 355, in
+load_func
+    (func_name, errstr))
+Exception: Failed to load BPF program do_count: Invalid argument
 ```
