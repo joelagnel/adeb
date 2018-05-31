@@ -21,7 +21,7 @@ usage() {
 	echo ""
 	echo "	--download	Download full FS archive from web (overrides all tools specified)"
 	echo "	--archive	Use archive for root fs (overrides all other prepare options)"
-	echo "  --build-image	Build an ext4 .img with the base image and BCC (useful for Qemu)"
+	echo "	--build-image	Build an ext4 .img with the base image and BCC (useful for Qemu)"
 	echo ""
 	echo "	--bcc		Build and install BCC from source"
 	echo "	--kernelsrc	Extract kernel headers for BCC from here"
