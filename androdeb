@@ -42,6 +42,7 @@ case $key in
     --download) DOWNLOAD=1; shift || true; ;;
     --bcc) source $spath/packages/bcc; shift || true;     ;;
     --kernelsrc) KERNELSRC="$2"; shift || true;     shift || true;     ;;
+    --skip-install) SKIP_INSTALL=1; shift || true; ;;
     --kernel-headers-targz) KERNELHDRS=$2; shift || true;	shift || true;	;;
     --tempdir) TDIR="$2"; shift || true;     shift || true;     ;;
     --buildtar) TARDIR="$2"; shift || true;     shift || true;     ;;
@@ -158,7 +159,8 @@ if [ ! -z "$KERNELHDRS" ]; then
 	echo "Building updating kernel headers from supplied tar.gz ($KERNELHDRS)"
 
 	# Is header tar gz update the only thing left to do?
-	if [[ -z "$PACKAGES" ]] && [[ -z "$TARF" ]] && [[ -z "$BUILD_IMAGE" ]] && [[ -z "$KERNELSRC" ]] ; then
+	if [[ ! -z "$SKIP_INSTALL" ]]; then
+		echo "Skipping install"
 		push_unpack_tarred_headers $KERNELHDRS; do_cleanup; all_done_banner; exit 0; fi
 
 	tar -xvf $KERNELHDRS -C $OUT_TMP/ > /dev/null
@@ -170,7 +172,8 @@ if [ ! -z "$KERNELSRC" ]; then
 	$spath/bcc/build-kheaders-targz.sh ${KERNELSRC} $TDIR_ABS/kh.tgz > /dev/null
 
 	# Is header update the only thing left to do?
-	if [[ -z "$PACKAGES" ]] && [[ -z "$BUILD_IMAGE" ]] && [[ -z "$TARF" ]]; then
+	if [[ ! -z "$SKIP_INSTALL" ]]; then
+		echo "Skipping install"
 		push_unpack_headers; do_cleanup; all_done_banner; exit 0; fi
 
 	mkdir $OUT_TMP/kernel-headers

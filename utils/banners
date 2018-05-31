@@ -25,7 +25,7 @@ usage() {
 	echo ""
 	echo "	--bcc		Build and install BCC from source"
 	echo "	--kernelsrc	Extract kernel headers for BCC from here"
-	echo "	                (use if BCC couldn't find headers on device)"
+	echo "	--skip-install	Pass this along if only header install is needed"
 	echo ""
 	echo "	--tempdir	Use a specific temporary directory for build operation"
 	echo "	--buildtar	Local directory to store tarball of androdeb env from device"

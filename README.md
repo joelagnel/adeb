@@ -85,7 +85,7 @@ androdeb prepare --download --kernelsrc /path/to/kernel-source
 
 If you need to put kernel sources for an existing install, run:
 ```
-androdeb prepare --kernelsrc /path/to/kernel-source
+androdeb prepare --kernelsrc /path/to/kernel-source --skip-install
 ```
 Note: The kernel sources should have been built (atleast build should have started).
 
