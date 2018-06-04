@@ -61,16 +61,13 @@ if (not os.path.exists(trace_path + "irq_disable") or
 
 bpf_text = """
 #include <uapi/linux/ptrace.h>
-#include <uapi/linux/limits.h>
 #include <linux/sched.h>
 
-extern char _stext[];
-
 enum addr_offs {
-    start_caller_off,
-    start_parent_off,
-    end_caller_off,
-    end_parent_off
+    START_CALLER_OFF,
+    START_PARENT_OFF,
+    END_CALLER_OFF,
+    END_PARENT_OFF
 };
 
 struct start_data {
@@ -166,8 +163,8 @@ TRACEPOINT_PROBE(preemptirq, TYPE_disable)
 
     bpf_trace_printk(\"Entered new section, setting time to %lu\\n\", (unsigned long)ts);
     s.idle_skip = 0;
-    s.addr_offs[start_caller_off] = args->caller_offs;
-    s.addr_offs[start_parent_off] = args->parent_offs;
+    s.addr_offs[START_CALLER_OFF] = args->caller_offs;
+    s.addr_offs[START_PARENT_OFF] = args->parent_offs;
     s.ts = ts;
     s.active = 1;
     bpf_trace_printk(\"Finished storing\\n\", (unsigned long)ts);
@@ -230,10 +227,10 @@ TRACEPOINT_PROBE(preemptirq, TYPE_enable)
     struct data_t data = {};
 
     if (bpf_get_current_comm(&data.comm, sizeof(data.comm)) == 0) {
-        data.addrs[start_caller_off] = std.addr_offs[start_caller_off];
-        data.addrs[start_parent_off] = std.addr_offs[start_parent_off];
-        data.addrs[end_caller_off] = args->caller_offs;
-        data.addrs[end_parent_off] = args->parent_offs;
+        data.addrs[START_CALLER_OFF] = std.addr_offs[START_CALLER_OFF];
+        data.addrs[START_PARENT_OFF] = std.addr_offs[START_PARENT_OFF];
+        data.addrs[END_CALLER_OFF] = args->caller_offs;
+        data.addrs[END_PARENT_OFF] = args->parent_offs;
 
         data.id = id;
         data.stack_id = stack_traces.get_stackid(args, BPF_F_REUSE_STACKID);
