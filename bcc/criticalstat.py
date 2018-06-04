@@ -1,7 +1,7 @@
 #!/usr/bin/python
 #
 # By Joel Fernandes <joel@joelfernandes.org>
-#
+# (c) Google LLC.
 
 from __future__ import print_function
 from bcc import BPF
@@ -86,7 +86,7 @@ struct data_t {
     char comm[TASK_COMM_LEN];
 };
 
-BPF_STACK_TRACE(stack_traces, 1024);
+BPF_STACK_TRACE(stack_traces, 16384);
 BPF_PERCPU_ARRAY(sts, struct start_data, 1);
 BPF_PERCPU_ARRAY(isidle, u64, 1);
 BPF_PERF_OUTPUT(events);
@@ -124,18 +124,14 @@ TRACEPOINT_PROBE(power, cpu_idle)
 
 static int in_idle(void)
 {
-     u64 *idlep, idle;
+     u64 *idlep;
      int idx = 0;
 
     // Skip event if we're in idle loop
     idlep = isidle.lookup(&idx);
-    bpf_probe_read(&idle, sizeof(u64), idlep);
-
-    // Skip if we're in idle loop
-    if (idle)
+    if (idlep && *idlep)
         return 1;
-    else
-        return 0;
+    return 0;
 }
 
 static void reset_state(void)
@@ -233,7 +229,7 @@ TRACEPOINT_PROBE(preemptirq, TYPE_enable)
         data.addrs[END_PARENT_OFF] = args->parent_offs;
 
         data.id = id;
-        data.stack_id = stack_traces.get_stackid(args, BPF_F_REUSE_STACKID);
+        data.stack_id = stack_traces.get_stackid(args, 0);
         data.time = diff;
         data.cpu = bpf_get_smp_processor_id();
         bpf_trace_printk(\"Large diff found: %lu\\n\", (unsigned long)diff);
@@ -288,20 +284,23 @@ def print_event(cpu, data, size):
             print("Empty kernel stack received\n")
             return
 
-        kstack = stack_traces.walk(event.stack_id)
-
-        syms = get_syms(kstack)
-        if not syms:
-            return
-
         print("===================================")
         print("TASK: %s (pid %5d tid %5d) Total Time: %-9.3fus\n\n" % (event.comm.decode(), \
             (event.id >> 32), (event.id & 0xffffffff), float(event.time) / 1000), end="")
         print("Section start: {} -> {}".format(b.ksym(stext + event.addrs[0]), b.ksym(stext + event.addrs[1])))
         print("Section end:   {} -> {}".format(b.ksym(stext + event.addrs[2]), b.ksym(stext + event.addrs[3])))
-        for s in syms:
-            print("  ", end="")
-            print("%s" % s)
+
+        if event.stack_id < 16384:
+            kstack = stack_traces.walk(event.stack_id)
+            syms = get_syms(kstack)
+            if not syms:
+                return
+
+            for s in syms:
+                print("  ", end="")
+                print("%s" % s)
+        else:
+            print("NO STACK FOUND DUE TO COLLISION")
         print("===================================")
         print("")
     except:
@@ -313,4 +312,3 @@ print("Finding critical section with {} disabled for > {}us".format(('preempt' i
 
 while 1:
     b.perf_buffer_poll();
-
