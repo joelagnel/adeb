@@ -91,6 +91,23 @@ BPF_PERCPU_ARRAY(sts, struct start_data, 1);
 BPF_PERCPU_ARRAY(isidle, u64, 1);
 BPF_PERF_OUTPUT(events);
 
+/*
+ * In the below code we install tracepoint probes on preempt or
+ * IRQ disable/enable critical sections and idle events, the cases
+ * are combinations of 4 different states.
+ * The states are defined as:
+ * CSenter: A critical section has been entered. Either due to
+ *          preempt disable or irq disable.
+ * CSexit: A critical section has been exited. Either due to
+ *         preempt enable or irq enable.
+ * Ienter: The CPU has entered an idle state.
+ * Iexit: The CPU has exited an idle state.
+ *
+ * The scenario we are trying to detect is if there is an overlap
+ * between Critical sections and idle entry/exit. If there are any
+ * such cases, we avoid recording those critical sections since they
+ * are not worth while to record and just add noise.
+ */
 TRACEPOINT_PROBE(power, cpu_idle)
 {
     int idx = 0;
@@ -111,11 +128,9 @@ TRACEPOINT_PROBE(power, cpu_idle)
 
     // Mark CPU as actively within idle or not.
     if (args->state < 100) {
-        bpf_trace_printk(\"Setting idle\\n\");
         val = 1;
         isidle.update(&idx, &val);
     } else {
-        bpf_trace_printk(\"Resetting idle\\n\");
         val = 0;
         isidle.update(&idx, &val);
     }
@@ -150,20 +165,17 @@ TRACEPOINT_PROBE(preemptirq, TYPE_disable)
     // Handle the case Ienter, CSenter, CSexit, Iexit
     // Handle the case Ienter, CSenter, Iexit, CSexit
     if (in_idle()) {
-        bpf_trace_printk(\"disable: In idle, resetting\\n\");
         reset_state();
         return 0;
     }
 
     u64 ts = bpf_ktime_get_ns();
 
-    bpf_trace_printk(\"Entered new section, setting time to %lu\\n\", (unsigned long)ts);
     s.idle_skip = 0;
     s.addr_offs[START_CALLER_OFF] = args->caller_offs;
     s.addr_offs[START_PARENT_OFF] = args->parent_offs;
     s.ts = ts;
     s.active = 1;
-    bpf_trace_printk(\"Finished storing\\n\", (unsigned long)ts);
 
     sts.update(&idx, &s);
     return 0;
@@ -178,15 +190,12 @@ TRACEPOINT_PROBE(preemptirq, TYPE_enable)
     // Handle the case CSenter, Ienter, CSexit, Iexit
     // Handle the case Ienter, CSenter, CSexit, Iexit
     if (in_idle()) {
-        bpf_trace_printk(\"enable: In idle, resetting\\n\");
         reset_state();
         return 0;
     }
 
-    bpf_trace_printk(\"enable: start lookup\\n\");
 
     stdp = sts.lookup(&idx);
-    bpf_trace_printk(\"enable: start read\\n\");
     bpf_probe_read(&std, sizeof(struct start_data), stdp);
 
     // Handle the case Ienter, Csenter, Iexit, Csexit
@@ -201,18 +210,15 @@ TRACEPOINT_PROBE(preemptirq, TYPE_enable)
         return 0;
     }
 
-    bpf_trace_printk(\"enable: start gettime\\n\");
     end_ts = bpf_ktime_get_ns();
     start_ts = std.ts;
 
     if (start_ts > end_ts) {
-        bpf_trace_printk("ERROR: start < end\\n");
         reset_state();
         return 0;
     }
 
     diff = end_ts - start_ts;
-    bpf_trace_printk(\"Exited section, diff is %lu\\n\", (unsigned long)diff);
 
     if (diff < DURATION) {
         reset_state();
@@ -232,10 +238,7 @@ TRACEPOINT_PROBE(preemptirq, TYPE_enable)
         data.stack_id = stack_traces.get_stackid(args, 0);
         data.time = diff;
         data.cpu = bpf_get_smp_processor_id();
-        bpf_trace_printk(\"Large diff found: %lu\\n\", (unsigned long)diff);
         events.perf_submit(args, &data, sizeof(data));
-    } else {
-        bpf_trace_printk("ERROR: Couldn't get process name\\n");
     }
 
     reset_state();
