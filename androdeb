@@ -31,7 +31,8 @@ case $key in
     prepare) PREPARE=1;  shift || true;    ;;
     shell) ASHELL=1;     shift || true;     ;;
     remove) REMOVE=1;     shift || true;     ;;
-    pull) PULL=1; shift || true; ;;
+    git-pull) GIT_PULL=1; shift || true; ;;
+    pull) PULL=1; shift || true; break	;;
     --arch) ARCH=$2; shift || true; shift || true; ;;
     --archive) TARF=$2; shift || true; shift || true; ;;
     --tracers) source $spath/packages/tracers; shift || true; ;;
@@ -53,11 +54,31 @@ case $key in
 esac
 done
 
-if [ ! -z "$PULL" ]; then
+if [ ! -z "$GIT_PULL" ]; then
 	echo "Updating androdeb by git pull"
 	cd $spath
 	git pull
 	echo "Done."
+	exit 0
+fi
+
+if [ ! -z "$PULL" ]; then
+	if [ $1 == "-a" ]; then
+		PRESERVE="-a"
+		echo "Preserving filestamps and mode"
+		shift || true
+	fi
+	file_count=$#
+	if [ $file_count -gt 1 ]; then
+		file_count=$((file_count - 1))
+	fi
+	i=0
+	while [ $i -lt $file_count ]; do
+		files["$i"]=/data/androdeb/debian/$1
+		shift || true
+		i=$((i + 1))
+	done
+	$ADB pull $PRESERVE "${files[@]}" "$@"
 	exit 0
 fi
 
