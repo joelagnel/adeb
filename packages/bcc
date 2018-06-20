@@ -22,8 +22,4 @@ python-netaddr
 python-pyroute2
 "
 
-EXTRA_FILES+="
-bcc/criticalstat.py
-"
-
 INSTALL_BCC=1
