@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/system/bin/sh
 set -e
 # Build a tarball out of a android environment which I can then
 # upload to places for people who want to expedite the install

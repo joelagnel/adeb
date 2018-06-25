@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/system/bin/sh
 
 if [ "$1x" == "--debugx" ]; then
 	set -x
