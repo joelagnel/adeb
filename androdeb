@@ -100,7 +100,7 @@ fi
 
 if [ ! -z "$REMOVE" ]; then
 	die_if_no_androdeb "Nothing to remove."
-	$ADB shell /data/androdeb/device-umount-all;
+	$ADB shell /data/androdeb/device-umount-all || true;
 	$ADB shell rm -rf /data/androdeb; exit 0; fi
 
 ##########################################################
