@@ -2,7 +2,7 @@
 #
 # (c) Joel Fernandes <joel@joelfernandes.org>
 
-VERSION=v0.99a
+VERSION=v0.99b
 
 spath="$(dirname "$(readlink -f "$0")")"
 # spath=$( cd "$(dirname "$0")" ; pwd -P )
@@ -170,7 +170,9 @@ TDIR_ABS=$( cd "$TDIR" ; pwd -P )
 
 if [ ! -z "$DOWNLOAD" ]; then
    echo "Downloading Androdeb from the web..."; echo ""
-   curl -L https://github.com/joelagnel/androdeb/releases/download/$VERSION/androdeb-fs.tgz --output $TDIR_ABS/androdeb-fs.tgz;
+   # Github dropped tar gz support! ##?#??#! Now we've to zip everything.
+   curl -L https://github.com/joelagnel/androdeb/releases/download/$VERSION/androdeb-fs.tgz.zip --output $TDIR_ABS/androdeb-fs.tgz.zip;
+   unzip -e $TDIR_ABS/androdeb-fs.tgz.zip -d $TDIR_ABS/
    TARF=$TDIR_ABS/androdeb-fs.tgz; fi
 
 OUT_TMP=$TDIR/debian; rm -rf $OUT_TMP; mkdir -p $OUT_TMP
