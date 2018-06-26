@@ -74,8 +74,8 @@ def syscalls__sys_exit_futex(event, ctxt, cpu, s, ns, tid, comm, callchain,
 
                 # Track details about the maximum contention seen
                 # including owner and its callchain
-                if (tid, thread_thislock[tid]) in waker_wakee:
-                    prev_wait = waker_wakee[(tid, thread_thislock[tid])][0]
+                if (tid, thread_thislock[tid]) in max_waits:
+                    prev_wait = max_waits[(tid, thread_thislock[tid])][0]
                 else:
                     prev_wait = 0
 
@@ -110,6 +110,6 @@ def trace_end():
 
                 waker_pid = max_waits[tid, lock][1]
                 waker_name = process_names[waker_pid] if waker_pid in process_names else "nameless-owner"
-                print "Owner %s caused this contention of %d. Owner's Call stack below:" % (waker_name, max_waits[tid, lock][0])
+                print "Owner %s caused this contention of %d ns. Owner's Call stack below:" % (waker_name, max_waits[tid, lock][0])
                 print_callchain(max_waits[tid, lock][2])
 
