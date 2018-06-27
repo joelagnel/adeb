@@ -33,6 +33,7 @@ case $key in
     remove) REMOVE=1;     shift || true;     ;;
     git-pull) GIT_PULL=1; shift || true; ;;
     pull) PULL=1; shift || true; break	;;
+    push) PUSH=1; shift || true; break	;;
     --arch) ARCH=$2; shift || true; shift || true; ;;
     --archive) TARF=$2; shift || true; shift || true; ;;
     --tracers) source $spath/packages/tracers; shift || true; ;;
@@ -62,16 +63,24 @@ if [ ! -z "$GIT_PULL" ]; then
 	exit 0
 fi
 
+#  Helper function to count number of source arguments in a list
+#  when more than one argument is supplied, it is assumed the last argument
+#  is a destination
+function count_sources() {
+	local source_count=$#
+	if [ $source_count -gt 1 ]; then
+		source_count=$((source_count - 1))
+	fi
+	echo "$source_count"
+}
+
 if [ ! -z "$PULL" ]; then
 	if [ $1 == "-a" ]; then
 		PRESERVE="-a"
 		echo "Preserving filestamps and mode"
 		shift || true
 	fi
-	file_count=$#
-	if [ $file_count -gt 1 ]; then
-		file_count=$((file_count - 1))
-	fi
+	file_count=`count_sources $@`
 	i=0
 	while [ $i -lt $file_count ]; do
 		files["$i"]=/data/androdeb/debian/$1
@@ -79,6 +88,23 @@ if [ ! -z "$PULL" ]; then
 		i=$((i + 1))
 	done
 	$ADB pull $PRESERVE "${files[@]}" "$@"
+	exit 0
+fi
+
+if [ ! -z "$PUSH" ]; then
+	if [ $1 == "--sync" ]; then
+		sync=$1
+		shift || true
+	fi
+	file_count=`count_sources $@`
+	i=0
+	while [ $i -lt $file_count ]; do
+		files["$i"]=$1
+		shift || true
+		i=$((i + 1))
+	done
+	dest=/data/androdeb/debian/$1
+	$ADB push $sync "${files[@]}" $dest
 	exit 0
 fi
 
