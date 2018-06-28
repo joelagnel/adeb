@@ -63,17 +63,6 @@ if [ ! -z "$GIT_PULL" ]; then
 	exit 0
 fi
 
-#  Helper function to count number of source arguments in a list
-#  when more than one argument is supplied, it is assumed the last argument
-#  is a destination
-function count_sources() {
-	local source_count=$#
-	if [ $source_count -gt 1 ]; then
-		source_count=$((source_count - 1))
-	fi
-	echo "$source_count"
-}
-
 if [ ! -z "$PULL" ]; then
 	if [ $1 == "-a" ]; then
 		PRESERVE="-a"
@@ -92,10 +81,6 @@ if [ ! -z "$PULL" ]; then
 fi
 
 if [ ! -z "$PUSH" ]; then
-	if [ $1 == "--sync" ]; then
-		sync=$1
-		shift || true
-	fi
 	file_count=`count_sources $@`
 	i=0
 	while [ $i -lt $file_count ]; do
