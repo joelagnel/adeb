@@ -51,3 +51,14 @@ die_if_no_androdeb() {
 	if [ $? -ne 0 ]; then die 8 "Existing androdeb env not found on device. $1"; fi
 	set -e
 }
+
+#  Helper function to count number of source arguments in a list
+#  when more than one argument is supplied, it is assumed the last argument
+#  is a destination
+count_sources() {
+	local source_count=$#
+	if [ $source_count -gt 1 ]; then
+		source_count=$((source_count - 1))
+	fi
+	echo "$source_count"
+}
