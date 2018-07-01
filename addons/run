@@ -9,8 +9,16 @@ cd $spath
 mount --bind /proc debian/proc/ > /dev/null
 mount --bind /dev debian/dev/ > /dev/null
 mount --bind /sys debian/sys/ > /dev/null
+
 mount --bind /sys/kernel/debug/ debian/sys/kernel/debug/ > /dev/null
 mount --bind /sys/kernel/debug/tracing/ debian/sys/kernel/debug/tracing/
+
+# Fix up weirdness with debugfs permission changing because of
+# above mounts.
+chmod 0777       /sys/kernel/debug > /dev/null
+chmod 0777 debian/sys/kernel/debug > /dev/null
+chmod 0777       /sys/kernel/debug/tracing > /dev/null
+chmod 0777 debian/sys/kernel/debug/tracing > /dev/null
 
 # Mount Android partitions
 if [ -d /d/ ]; then
