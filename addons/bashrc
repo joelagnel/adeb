@@ -1,10 +1,10 @@
-export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/share/bcc/tools/
-export TMPDIR=/tmp/
+# The bannered bashrc
+source .bashrc.common
 
 echo ""
 echo "##########################################################"
 echo "# Welcome to androdeb environment running on Android!    #"
-echo "# Questions to: Joel Fernandes <joelaf@google.com>       #"
+echo "# Questions to: Joel Fernandes <joel@joelfernandes.org>  #"
 echo "                                                         #"
 echo " Try running vim, gcc, clang, bcc, git, make, perf etc   #"
 echo "   or apt-get install something.                         #"
@@ -14,7 +14,4 @@ echo " CONFIG_ANDROID_PARANOID_NETWORK and rebuild kernel.     #"
 echo "##########################################################"
 echo ""
 
-psk=/proc/sys/kernel/kptr_restrict
-if [ -f $psk ]; then echo 0 > $psk; fi
 
-if [ -d /kernel-headers/ ]; then export BCC_KERNEL_SOURCE=/kernel-headers/; fi

@@ -1,0 +1,7 @@
+export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/share/bcc/tools/
+export TMPDIR=/tmp/
+
+psk=/proc/sys/kernel/kptr_restrict
+if [ -f $psk ]; then echo 0 > $psk; fi
+
+if [ -d /kernel-headers/ ]; then export BCC_KERNEL_SOURCE=/kernel-headers/; fi
