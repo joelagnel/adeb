@@ -39,7 +39,7 @@ do_mounts()
 	fi
 }
 
-mount | grep debian
+mount | grep debian > /dev/null
 if [ $? -ne 0 ]; then do_mounts; fi
 
 chroot debian/ /bin/bash
