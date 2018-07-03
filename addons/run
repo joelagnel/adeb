@@ -3,42 +3,44 @@ spath=$( cd "$(dirname "$0")" ; pwd -P )
 
 cd $spath
 
-# tear everything down
-./device-umount-all
+do_mounts()
+{
+	mount --bind /proc debian/proc/ > /dev/null
+	mount --bind /dev debian/dev/ > /dev/null
+	mount --bind /sys debian/sys/ > /dev/null
+	mount --bind /sys/kernel/debug/ debian/sys/kernel/debug/ > /dev/null
+	mount --bind /sys/kernel/debug/tracing/ debian/sys/kernel/debug/tracing/
 
-mount --bind /proc debian/proc/ > /dev/null
-mount --bind /dev debian/dev/ > /dev/null
-mount --bind /sys debian/sys/ > /dev/null
+	# Fix up weirdness with debugfs permission changing because of
+	# above mounts.
+	chmod 0777       /sys/kernel/debug > /dev/null
+	chmod 0777 debian/sys/kernel/debug > /dev/null
+	chmod 0777       /sys/kernel/debug/tracing > /dev/null
+	chmod 0777 debian/sys/kernel/debug/tracing > /dev/null
 
-mount --bind /sys/kernel/debug/ debian/sys/kernel/debug/ > /dev/null
-mount --bind /sys/kernel/debug/tracing/ debian/sys/kernel/debug/tracing/
+	# Mount Android partitions
+	if [ -d /d/ ]; then
+		if [ ! -d debian/d ]; then ln -s /sys/kernel/debug debian/d; fi
+	fi
 
-# Fix up weirdness with debugfs permission changing because of
-# above mounts.
-chmod 0777       /sys/kernel/debug > /dev/null
-chmod 0777 debian/sys/kernel/debug > /dev/null
-chmod 0777       /sys/kernel/debug/tracing > /dev/null
-chmod 0777 debian/sys/kernel/debug/tracing > /dev/null
+	if [ -d /data/ ]; then
+		mkdir -p debian/data/
+		mount --bind /data debian/data/
+	fi
 
-# Mount Android partitions
-if [ -d /d/ ]; then
-	if [ ! -d debian/d ]; then ln -s /sys/kernel/debug debian/d; fi
-fi
+	if [ -d /system/ ]; then
+		mkdir -p debian/system/
+		mount --bind /system debian/system/
+	fi
 
-if [ -d /data/ ]; then
-	mkdir -p debian/data/
-	mount --bind /data debian/data/
-fi
+	if [ -d /vendor/ ]; then
+		mkdir -p debian/vendor/
+		mount --bind /vendor debian/vendor/
+	fi
+}
 
-if [ -d /system/ ]; then
-	mkdir -p debian/system/
-	mount --bind /system debian/system/
-fi
-
-if [ -d /vendor/ ]; then
-	mkdir -p debian/vendor/
-	mount --bind /vendor debian/vendor/
-fi
+mount | grep debian
+if [ $? -ne 0 ]; then do_mounts; fi
 
 chroot debian/ /bin/bash
 
