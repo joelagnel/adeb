@@ -27,6 +27,17 @@ config_full_build() {
 # Parse command line parameters
 if [ $# -lt 1 ]; then usage; fi; POSITIONAL=()
 while [[ $# -gt 0 ]]; do key="$1";
+
+# If its shell mode, any future args become shell's args
+if [ "x$ASHELL" == "x1" ]; then
+	if [ -z "$SHELL_ARGS" ]; then
+		SHELL_ARGS=$key
+	else
+		SHELL_ARGS="$SHELL_ARGS $key"
+	fi
+	shift || true; continue
+fi
+
 case $key in
     prepare) PREPARE=1;  shift || true;    ;;
     shell) ASHELL=1;     shift || true;     ;;
@@ -123,7 +134,16 @@ if [ ! -z ${ASHELL+x} ]; then
 	   die 2 "Device doesn't have an androdeb environment, run \"./androdeb prepare\" first";
 	fi; set -e
 
-	$ADB shell -t /data/androdeb/run
+	if [ ! -z ${SHELL_ARGS+x} ]; then
+		# Explanation of quotes:
+		# Outer quote is so that androdeb's bash passes the SHELL_ARGS as a single
+		# argument to $ADB shell. Inner quotes is so that run-command can receive all
+		# the args even though they may be separated by spaces. \m/
+		$ADB shell -t /data/androdeb/run-command "\"$SHELL_ARGS\""
+	else
+		$ADB shell -t /data/androdeb/run
+	fi
+
 	exit 0
 fi
 

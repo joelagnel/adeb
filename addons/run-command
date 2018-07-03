@@ -3,6 +3,6 @@ spath=$( cd "$(dirname "$0")" ; pwd -P )
 cd $spath
 
 # Directly execute a command within the chroot of an Android device
-CMD=$1
+CMD="$*"
 
 chroot debian /bin/bash -i -c "$CMD"
