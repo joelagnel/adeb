@@ -43,6 +43,3 @@ mount | grep debian
 if [ $? -ne 0 ]; then do_mounts; fi
 
 chroot debian/ /bin/bash
-
-# tear everything down
-./device-umount-all
