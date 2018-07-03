@@ -5,4 +5,4 @@ cd $spath
 # Directly execute a command within the chroot of an Android device
 CMD="$*"
 
-chroot debian /bin/bash -i -c "$CMD"
+chroot debian /bin/bash --rcfile '.bashrc.silent' -i -c "$CMD"
