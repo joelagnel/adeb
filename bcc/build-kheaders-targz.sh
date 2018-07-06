@@ -1,39 +1,63 @@
 #!/bin/bash
+KHEADERS_TMP=/tmp/kheaders.tar
+
 script_full_path=$( cd "$(dirname "$0")" ; pwd -P )
 
-if [ $# -ne 2 ]; then
-    echo "illegal number of parameters, usage: ./build KERNEL_PATH out.tar.gz"
+if [ $# -lt 2 ]; then
+    >&2 echo "illegal number of parameters, usage: ./build out.tar.gz KERNEL_PATH ..."
     exit 1
 fi
 
 # Please provide absolute paths
-KERNEL_PATH=$1
-OUT_TAR=$2
+OUT_TAR=$1
+shift
 
-KERNEL_PATH="$(dirname $(readlink -e $KERNEL_PATH))/$(basename $KERNEL_PATH)"
-if [ ! -d "$KERNEL_PATH" ]; then
-        echo "Kernel directory couldn't be found"
-        exit 3
-fi
+rm -f $KHEADERS_TMP
 
-# kdir=$(basename $KERNEL_PATH)
+while (( "$#" )); do
+  KERNEL_SRC_PATH="$(dirname $(readlink -e $1))/$(basename $1)"
+    if [ ! -d "$KERNEL_SRC_PATH" ]; then
+        >&2 echo "Kernel src directory '$KERNEL_SRC_PATH' couldn't be found"
+        exit 2
+    fi
 
-cd $KERNEL_PATH
-find arch -name include -type d -print | xargs -n1 -i: find : -type f > /tmp/kernel-headers.h
-find include >> /tmp/kernel-headers.h
+    pushd $KERNEL_SRC_PATH > /dev/null
+    find arch -ipath "*/include/*" -type f -not -empty -exec tar -rf $KHEADERS_TMP {} +
+    findret=$?
+    if [ $findret -ne 0 ]; then
+        >&2 echo "Kernel src directory '$KERNEL_SRC_PATH' does not contain expected 'arch' subdirectory"
+        exit $findret
+    fi
+    find include -type f -not -empty -exec tar -rf $KHEADERS_TMP {} +
+    findret=$?
+    if [ $findret -ne 0 ]; then
+        >&2 echo "Kernel src directory '$KERNEL_SRC_PATH' does not contain expected 'include' subdirectory"
+        exit $findret
+    fi
+    popd > /dev/null
 
-grep "include/generated/autoconf.h" /tmp/kernel-headers.h > /dev/null 2>&1
+    shift
+done
+
+# Check that tar contains expected 'include/generated/autoconf.h'
+tar -tf $KHEADERS_TMP | grep "include/generated/autoconf.h" > /dev/null 2>&1
 retgrep=$?
 if [ $retgrep -ne 0 ]; then
-	>&2 echo ""
-	>&2 echo "The kernel sources at ${KERNEL_PATH} you pointed to aren't configured and built."
-	>&2 echo "Please atleast run in your kernel sources:"
-	>&2 echo $'make defconfig\nmake'
-	>&2 echo $'\nNote: You dont need to do the full build since headers are generated early on.\n'
-	>&2 echo "Note: Please build your kernel in tree (build and source should be in same directory)"
-	>&2 echo ""
-	exit $retgrep
+    >&2 echo ""
+    >&2 echo "The kernel sources you pointed to aren't configured and built."
+    >&2 echo "Please atleast run in your kernel sources:"
+    >&2 echo $'make defconfig\nmake'
+    >&2 echo $'\nNote: You dont need to do the full build since headers are generated early on.\n'
+    >&2 echo ""
+    exit $retgrep
 fi
 
-cat /tmp/kernel-headers.h | tar -zcf $OUT_TAR -T -
-rm /tmp/kernel-headers.h
+gzip -c $KHEADERS_TMP > $OUT_TAR
+gzipret=$?
+if [ $gzipret -ne 0 ]; then
+    >&2 echo "Failed to compress kernel headers from '$KHEADERS_TMP' to '$OUT_TAR'"
+    exit $gzipret
+fi
+
+rm -f $KHEADERS_TMP
+

@@ -55,6 +55,7 @@ case $key in
     --download) DOWNLOAD=1; shift || true; ;;
     --bcc) source $spath/packages/bcc; shift || true;     ;;
     --kernelsrc) KERNELSRC="$2"; shift || true;     shift || true;     ;;
+    --kernelout) KERNELOUT="$2"; shift || true;     shift || true;     ;;
     --skip-install) SKIP_INSTALL=1; shift || true; ;;
     --kernel-headers-targz) KERNELHDRS=$2; shift || true;	shift || true;	;;
     --tempdir) TDIR="$2"; shift || true;     shift || true;     ;;
@@ -189,6 +190,8 @@ if [ ! -z "$TARF" ] && [ ! -f $TARF ] && [ -z "$DOWNLOAD" ]; then die 5 "archive
 
 if [ ! -z "$KERNELSRC" ] && [ ! -d $KERNELSRC ]; then die 6 "Kernel source directory provided doesn't exist"; fi
 
+if [ ! -z "$KERNELOUT" ] && [ ! -d $KERNELOUT ]; then die 6 "Kernel output directory provided doesn't exist"; fi
+
 if [ ! -z "$KERNELHDRS" ] && [ ! -f $KERNELHDRS ]; then die 7 "Kernel headers tar.gz doesn't exist"; fi
 
 print_prepare_banner
@@ -221,9 +224,15 @@ if [ ! -z "$KERNELHDRS" ]; then
 fi
 
 # Package kernel headers
-if [ ! -z "$KERNELSRC" ]; then
-	echo "Building and updating kernel headers from kernel source dir ($KERNELSRC)"
-	$spath/bcc/build-kheaders-targz.sh ${KERNELSRC} $TDIR_ABS/kh.tgz > /dev/null
+if [ ! -z "$KERNELSRC" -o ! -z "$KERNELOUT" ]; then
+	echo "Building and updating kernel headers"
+	if [ ! -z "$KERNELSRC" ]; then
+		echo "Kernel src: $KERNELSRC"
+	fi
+	if [ ! -z "$KERNELOUT" ]; then
+		echo "Kernel out: $KERNELOUT"
+	fi
+	$spath/bcc/build-kheaders-targz.sh $TDIR_ABS/kh.tgz ${KERNELSRC} ${KERNELOUT} > /dev/null
 
 	# Is header update the only thing left to do?
 	if [[ ! -z "$SKIP_INSTALL" ]]; then

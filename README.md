@@ -89,6 +89,15 @@ androdeb prepare --kernelsrc /path/to/kernel-source --skip-install
 ```
 Note: The kernel sources should have been built (atleast build should have started).
 
+### Install kernel headers from an out-of-tree kernel build:
+
+If the kernel is built out-of-tree, the headers need to be combined from two
+locations. In this case, run:
+```
+androdeb prepare --download --kernelsrc /path/to/kernel-source --kernelout
+/path/to/kernel-output
+```
+
 ### Build and prepare device with a custom rootfs locally:
 
 The androdeb fs will be prepared locally by downloading packages as needed:
