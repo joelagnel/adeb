@@ -47,11 +47,11 @@ rm -rf $OUT_TMP/usr/lib/share/man/*
 
 # Fix apt-get issue: Android requires _apt user to be in the
 # AID_INET group which is also android specific.
-grep -ri _apt:x:100:65534 $OUT_TMP/etc/passwd
+grep -ri _apt:x:100:65534 $OUT_TMP/etc/passwd > /dev/null 2>&1
 if [ $? -ne 0 ]; then
 	echo "ERROR: _apt user cannot be added to AID_INET group"
 else
-	sed -i -e 's/_apt:x:100:65534/_apt:x:100:3003/' /etc/passwd
+	sed -i -e 's/_apt:x:100:65534/_apt:x:100:3003/' $OUT_TMP/etc/passwd
 fi
 
 # Clone BCC if needed
