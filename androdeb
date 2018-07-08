@@ -2,7 +2,7 @@
 #
 # (c) Joel Fernandes <joel@joelfernandes.org>
 
-VERSION=v0.99d
+VERSION=v0.99e
 
 spath="$(dirname "$(readlink -f "$0")")"
 # spath=$( cd "$(dirname "$0")" ; pwd -P )
