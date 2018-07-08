@@ -45,6 +45,15 @@ rm -rf $OUT_TMP/usr/lib/share/ieee-data/*
 rm -rf $OUT_TMP/usr/share/man/*
 rm -rf $OUT_TMP/usr/lib/share/man/*
 
+# Fix apt-get issue: Android requires _apt user to be in the
+# AID_INET group which is also android specific.
+grep -ri _apt:x:100:65534 $OUT_TMP/etc/passwd
+if [ $? -ne 0 ]; then
+	echo "ERROR: _apt user cannot be added to AID_INET group"
+else
+	sed -i -e 's/_apt:x:100:65534/_apt:x:100:3003/' /etc/passwd
+fi
+
 # Clone BCC if needed
 if [[ ! -z ${INSTALL_BCC+x} ]]; then
 git clone https://github.com/iovisor/bcc.git $TDIR/debian/bcc-master
