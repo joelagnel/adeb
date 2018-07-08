@@ -54,6 +54,9 @@ else
 	sed -i -e 's/_apt:x:100:65534/_apt:x:100:3003/' $OUT_TMP/etc/passwd
 fi
 
+# Add a default DNS server
+echo "nameserver 4.2.2.2" > $OUT_TMP/etc/resolv.conf
+
 # Clone BCC if needed
 if [[ ! -z ${INSTALL_BCC+x} ]]; then
 git clone https://github.com/iovisor/bcc.git $TDIR/debian/bcc-master
