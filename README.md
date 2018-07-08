@@ -74,6 +74,11 @@ Serial numbers of all devices connected can be obtained by `adb devices`.
 androdeb pull
 ```
 
+To update an existing androdeb clone on your host, run:
+```
+androdeb git-pull
+```
+
 More advanced usage instructions
 --------------------------------
 ### Install kernel headers in addition to preparing androdeb device:
