@@ -1,6 +1,8 @@
 # The bannered bashrc
 source .bashrc.common
 
+if [ ! -f .banner.shown ]; then
+
 echo ""
 echo "##########################################################"
 echo "# Welcome to androdeb environment running on Android!    #"
@@ -14,4 +16,6 @@ echo " CONFIG_ANDROID_PARANOID_NETWORK and rebuild kernel.     #"
 echo "##########################################################"
 echo ""
 
+touch .banner.shown
 
+fi
