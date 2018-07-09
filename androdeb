@@ -10,6 +10,8 @@ curdir=$( pwd -P )
 source $spath/utils/support
 source $spath/utils/banners
 
+box_out "androdeb: $VERSION"
+
 # Set default vars
 DISTRO=buster; ARCH=arm64
 ADB="adb"
