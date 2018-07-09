@@ -10,8 +10,6 @@ curdir=$( pwd -P )
 source $spath/utils/support
 source $spath/utils/banners
 
-box_out "androdeb: $VERSION"
-
 # Set default vars
 DISTRO=buster; ARCH=arm64
 ADB="adb"
@@ -70,6 +68,8 @@ case $key in
 esac
 done
 
+[ -z $ASHELL ] && box_out "androdeb: $VERSION"
+
 if [ ! -z "$GIT_PULL" ]; then
 	c_info "Updating androdeb by git pull"
 	cd $spath
@@ -116,6 +116,7 @@ fi
 if [[ ! -z ${TARDIR+x} ]] && [[ ! -d $TARDIR ]]; then die 7 "Tar dir specified doesn't exist"; fi
 
 if [ -z $BI ]; then
+	[ -z $ASHELL ] && c_info "Looking for device.."
 	do_adb_root "$ADB"
 
 	if [ $? -ne 0 ]; then
