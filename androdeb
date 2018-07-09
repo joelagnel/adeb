@@ -274,11 +274,13 @@ rm $ex_files
 # If we only wanted to prepare a rootfs and don't have
 # a device connected, then just echo that and skip cleanup
 if [ ! -z "$BUILD_IMAGE" ]; then
-	c_info "For --build-image, only the image is built"
-	c_info "Note that BCC will not be built on the image, you've to do it yourself"
+	c_info "For --build-image, only the image is built."
+	c_info "any builds that need to happen on device may be cloned but not built."
 	sudo $spath/buildimage $OUT_TMP $(dirname $BUILD_IMAGE)/$(basename $BUILD_IMAGE)
 	sudo chmod a+rw $(dirname $BUILD_IMAGE)/$(basename $BUILD_IMAGE)
-	do_cleanup; c_info "Your .img has been built! Enjoy!"; exit 0
+
+	do_cleanup
+	c_info "Your .img has been built! Enjoy!"; exit 0
 fi
 
 # Push tar to device and start unpack
