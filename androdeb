@@ -60,7 +60,7 @@ case $key in
     --skip-install) SKIP_INSTALL=1; shift || true; ;;
     --kernel-headers-targz) KERNELHDRS=$2; shift || true;	shift || true;	;;
     --tempdir) TDIR="$2"; shift || true;     shift || true;     ;;
-    --buildtar) TARDIR="$2"; shift || true;     shift || true;     ;;
+    --buildtar) BTAR=1; TARDIR="$2"; shift || true;     shift || true;     ;;
     --device|-s) ADB="$ADB -s $2"; shift || true; shift || true; ;;
     --build-image) BI=1; BUILD_IMAGEF=$2; SKIP_DEVICE=1; shift || true; shift || true; ;;
     --debug) set -x; shift || true; ;;
@@ -69,6 +69,10 @@ esac
 done
 
 [ -z $ASHELL ] && box_out "androdeb: $VERSION"
+
+if [ ! -z $BTAR ] && [ -z $TARDIR ]; then
+	TARDIR=$spath
+fi
 
 if [ ! -z "$GIT_PULL" ]; then
 	c_info "Updating androdeb by git pull"
