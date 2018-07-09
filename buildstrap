@@ -1,7 +1,7 @@
 #!/bin/bash
 
 spath="$(dirname "$(readlink -f "$0")")"
-source $spath/utils/android
+source $spath/utils/support
 source $spath/utils/banners
 
 ARCH=$1

@@ -7,7 +7,7 @@ VERSION=v0.99e
 spath="$(dirname "$(readlink -f "$0")")"
 # spath=$( cd "$(dirname "$0")" ; pwd -P )
 curdir=$( pwd -P )
-source $spath/utils/android
+source $spath/utils/support
 source $spath/utils/banners
 
 # Set default vars
