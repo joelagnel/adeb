@@ -26,6 +26,7 @@ chroot $OUT_TMP ln -s /bin/bash /bin/sh || true
 cp $spath/addons/bashrc $OUT_TMP/.bashrc
 cp $spath/addons/bashrc.common $OUT_TMP/.bashrc.common
 cp $spath/addons/bashrc.silent $OUT_TMP/.bashrc.silent
+cp $spath/addons/get_kvers.sh $OUT_TMP/
 
 for f in $EXTRA_FILES; do
 	if [ $f == "none" ]; then continue; fi
@@ -61,6 +62,11 @@ echo "nameserver 4.2.2.2" > $OUT_TMP/etc/resolv.conf
 if [ $INSTALL_BCC -eq 1 ]; then
 	git clone https://github.com/iovisor/bcc.git $TDIR/debian/bcc-master
 	cp $spath/bcc/build-bcc.sh $TDIR/debian/bcc-master/;
+
+	pushd $TDIR/debian/bcc-master
+	git apply $spath/bcc/misc/0001-clang-Allow-user-to-override-kernel-version.patch
+	git apply $spath/bcc/misc/0001-DONOT-MERGE-Remove-version-override-warnings.patch
+	popd
 fi
 
 # Should be really do this?

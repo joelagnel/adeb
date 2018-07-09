@@ -4,4 +4,24 @@ export TMPDIR=/tmp/
 psk=/proc/sys/kernel/kptr_restrict
 if [ -f $psk ]; then echo 0 > $psk; fi
 
-if [ -d /kernel-headers/ ]; then export BCC_KERNEL_SOURCE=/kernel-headers/; fi
+override_vers=1
+this_vers=$(/get_kvers.sh)
+if [ -d /kernel-headers/ ]; then
+	export BCC_KERNEL_SOURCE=/kernel-headers/;
+
+	h_vers=0
+	vers_line=$(grep LINUX_VERSION_CODE /kernel-headers/include/generated/uapi/linux/version.h)
+	if [ "x$vers_line" != "x" ]; then
+		h_vers=$(echo $vers_line | cut -d ' ' -f3)
+	fi
+
+	if [ $this_vers -eq $h_vers ]; then
+		override_vers=0
+	fi
+fi
+
+# Override kernel version if we haven't found headers with them.
+# Needed for BCC to work on slightly mismatched kernels.
+if [ $override_vers -eq 1 ]; then
+	export LINUX_VERSION_CODE_OVERRIDE=$this_vers
+fi
