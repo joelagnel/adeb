@@ -308,7 +308,7 @@ $ADB push $spath/addons/* /data/androdeb/
 $ADB shell /data/androdeb/device-unpack
 
 # Build BCC and install bcc on device if needed
-if [ $INSTALL_BCC -eq 0 ]; then
+if [ $INSTALL_BCC -eq 1 ]; then
 	$ADB shell /data/androdeb/run-command /bcc-master/build-bcc.sh;
 fi
 

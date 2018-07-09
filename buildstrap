@@ -64,8 +64,8 @@ if [ $INSTALL_BCC -eq 1 ]; then
 	cp $spath/bcc/build-bcc.sh $TDIR/debian/bcc-master/;
 
 	pushd $TDIR/debian/bcc-master
-	git apply $spath/bcc/misc/0001-clang-Allow-user-to-override-kernel-version.patch
-	git apply $spath/bcc/misc/0001-DONOT-MERGE-Remove-version-override-warnings.patch
+	git am $spath/bcc/misc/0001-clang-Allow-user-to-override-kernel-version.patch
+	git am $spath/bcc/misc/0001-DONOT-MERGE-Remove-version-override-warnings.patch
 	popd
 fi
 
