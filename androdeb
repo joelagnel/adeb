@@ -158,10 +158,10 @@ function do_cleanup() {
 function push_unpack_headers() {
 	die_if_no_androdeb "Couldn't update headers."
 
+	c_info "Storing kernel headers into androdeb /kernel-headers/"
 	$ADB shell rm -rf /data/androdeb/debian/kernel-headers/
 	$ADB shell mkdir  /data/androdeb/debian/kernel-headers/
-	$ADB push $TDIR_ABS/kh.tgz /data/androdeb/
-	c_info "Storing kernel headers into androdeb /kernel-headers/"
+	run_quiet $ADB push $TDIR_ABS/kh.tgz /data/androdeb/
 	$ADB shell tar -xvf /data/androdeb/kh.tgz -C /data/androdeb/debian/kernel-headers/ > /dev/null
 	$ADB shell rm /data/androdeb/kh.tgz
 }
@@ -171,7 +171,10 @@ function push_unpack_tarred_headers() {
 
 	$ADB shell rm -rf /data/androdeb/debian/kernel-headers/
 	$ADB shell mkdir  /data/androdeb/debian/kernel-headers/
-	$ADB push $1 /data/androdeb/
+
+	c_info "Pushing headers tar onto device"
+	run_quiet $ADB push $1 /data/androdeb/
+
 	c_info "Storing kernel headers into androdeb root directory"
 	$ADB shell tar -xvf /data/androdeb/$(basename $1) -C /data/androdeb/debian/ > /dev/null
 
@@ -238,9 +241,15 @@ fi
 if [ ! -z "$TARF" ]; then
 	c_info "Using archive at $TARF for filesystem preparation"
 	$ADB shell mkdir -p /data/androdeb/
-	$ADB push $TARF /data/androdeb/deb.tar.gz
-	$ADB push $spath/addons/* /data/androdeb/
-	$ADB shell /data/androdeb/device-unpack
+
+	c_info "Pushing filesystem to device.."
+	run_quiet $ADB push $TARF /data/androdeb/deb.tar.gz
+
+	c_info "Pushing addons to device.."
+	run_quiet $ADB push $spath/addons/* /data/androdeb/
+
+	c_info "Unpacking filesystem in device.."
+	run_quiet $ADB shell /data/androdeb/device-unpack
 
 	if [ ! -z "$KERNELHDRS" ]; then push_unpack_tarred_headers $KERNELHDRS; fi
 	if [ ! -z "$KERNELSRC" ]; then push_unpack_headers; fi
