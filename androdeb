@@ -289,10 +289,11 @@ if [ $SKIP_DEVICE -eq 1 ]; then
 	if [ ! -z $BI ]; then
 		sudo $spath/buildimage $OUT_TMP $(dirname $BUILD_IMAGEF)/$(basename $BUILD_IMAGEF)
 		sudo chmod a+rw $(dirname $BUILD_IMAGEF)/$(basename $BUILD_IMAGEF)
+		c_info "Your .img has been built! Enjoy!"
 	fi
 
 	do_cleanup
-	c_info "Your .img has been built! Enjoy!"; exit 0
+	exit 0
 fi
 
 # Push tar to device and start unpack
