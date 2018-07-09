@@ -283,8 +283,11 @@ rm $ex_files
 if [ $SKIP_DEVICE -eq 1 ]; then
 	c_info "Device preparation is being skipped for the selected options"
 	c_info "any builds that need to happen on device may be cloned but not built."
-	sudo $spath/buildimage $OUT_TMP $(dirname $BUILD_IMAGE)/$(basename $BUILD_IMAGE)
-	sudo chmod a+rw $(dirname $BUILD_IMAGE)/$(basename $BUILD_IMAGE)
+
+	if [ ! -z $BI ]; then
+		sudo $spath/buildimage $OUT_TMP $(dirname $BUILD_IMAGEF)/$(basename $BUILD_IMAGEF)
+		sudo chmod a+rw $(dirname $BUILD_IMAGEF)/$(basename $BUILD_IMAGEF)
+	fi
 
 	do_cleanup
 	c_info "Your .img has been built! Enjoy!"; exit 0
