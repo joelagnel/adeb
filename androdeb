@@ -14,6 +14,7 @@ source $spath/utils/banners
 DISTRO=buster; ARCH=arm64
 ADB="adb"
 SKIP_DEVICE=0			# Skip device preparation
+INSTALL_BCC=0			# Decide if BCC is to be installed
 
 # Default packages
 DEFAULT_PACKAGES+="bash
@@ -296,8 +297,9 @@ $ADB push $spath/addons/* /data/androdeb/
 $ADB shell /data/androdeb/device-unpack
 
 # Build BCC and install bcc on device if needed
-if [[ ! -z ${INSTALL_BCC+x} ]]; then
-$ADB shell /data/androdeb/run-command /bcc-master/build-bcc.sh; fi
+if [ $INSTALL_BCC -eq 0 ]; then
+	$ADB shell /data/androdeb/run-command /bcc-master/build-bcc.sh;
+fi
 
 do_cleanup
 
