@@ -41,7 +41,7 @@ do_adb_root() {
 die() {
 	exit_code=$1
 	msg=$2
-	echo "ERROR: $msg"
+	c_error "$msg"
 	exit $exit_code
 }
 

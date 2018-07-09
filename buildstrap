@@ -49,7 +49,7 @@ rm -rf $OUT_TMP/usr/lib/share/man/*
 # AID_INET group which is also android specific.
 grep -ri _apt:x:100:65534 $OUT_TMP/etc/passwd > /dev/null 2>&1
 if [ $? -ne 0 ]; then
-	echo "ERROR: _apt user cannot be added to AID_INET group"
+	c_warning "_apt user cannot be added to AID_INET group"
 else
 	sed -i -e 's/_apt:x:100:65534/_apt:x:100:3003/' $OUT_TMP/etc/passwd
 fi
@@ -67,7 +67,7 @@ chmod -R 0777 $TDIR/
 
 if [ $SKIP_COMPRESS -eq 1 ]; then exit 0; fi
 
-echo "Compressing new filesystem to prepare to push to Android /data/androdeb/"
+c_info "Compressing new filesystem to prepare to push to Android /data/androdeb/"
 tar -zcf $TDIR/deb.tar.gz -C $TDIR debian
 
 chmod 0777 $TDIR/deb.tar.gz
