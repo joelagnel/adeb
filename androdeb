@@ -112,12 +112,17 @@ fi
 if [[ ! -z ${TARDIR+x} ]] && [[ ! -d $TARDIR ]]; then die 7 "Tar dir specified doesn't exist"; fi
 
 if [ -z "$BUILD_IMAGE" ]; then
-do_adb_root "$ADB" || die 3 "adb root failed, make sure:
-- If multiple devices connected, provide --device <serialno>  (or -s <serialno>)
-- Try to run \"adb root\" manually and see if it works. Typically this needs a userdebug build.
+	do_adb_root "$ADB"
 
-Note: adb can be typically obtained using the android-tools-adb or the adb
-packages on your distro, or by installing the Android SDK."
+	if [ $? -ne 0 ]; then
+		c_error "adb root failed, make sure:"
+		c_error " * If multiple devices connected, provide --device <serialno>  (or -s <serialno>)"
+		c_error " * Try to run \"adb root\" manually and see if it works. Typically this needs a userdebug build."
+		c_error ""
+		c_error "Note: adb can be typically obtained using the android-tools-adb or the adb"
+		c_error "packages on your distro, or by installing the Android SDK."
+		die 3 "Exiting."
+	fi
 fi
 
 if [ ! -z "$REMOVE" ]; then
