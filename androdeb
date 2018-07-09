@@ -13,6 +13,7 @@ source $spath/utils/banners
 # Set default vars
 DISTRO=buster; ARCH=arm64
 ADB="adb"
+SKIP_DEVICE=0			# Skip device preparation
 
 # Default packages
 DEFAULT_PACKAGES+="bash
@@ -60,7 +61,7 @@ case $key in
     --tempdir) TDIR="$2"; shift || true;     shift || true;     ;;
     --buildtar) TARDIR="$2"; shift || true;     shift || true;     ;;
     --device|-s) ADB="$ADB -s $2"; shift || true; shift || true; ;;
-    --build-image) BUILD_IMAGE=$2; shift || true; shift || true; ;;
+    --build-image) BI=1; BUILD_IMAGEF=$2; SKIP_DEVICE=1; shift || true; shift || true; ;;
     --debug) set -x; shift || true; ;;
     *) c_error "Unknown option ($1)"; usage; ;;
 esac
@@ -111,7 +112,7 @@ fi
 
 if [[ ! -z ${TARDIR+x} ]] && [[ ! -d $TARDIR ]]; then die 7 "Tar dir specified doesn't exist"; fi
 
-if [ -z "$BUILD_IMAGE" ]; then
+if [ -z $BI ]; then
 	do_adb_root "$ADB"
 
 	if [ $? -ne 0 ]; then
@@ -123,6 +124,8 @@ if [ -z "$BUILD_IMAGE" ]; then
 		c_error "packages on your distro, or by installing the Android SDK."
 		die 3 "Exiting."
 	fi
+else
+	[ ! -z $BUILD_IMAGEF ] || die 8 "--build-image passed but no image file provided"
 fi
 
 if [ ! -z "$REMOVE" ]; then
@@ -267,19 +270,17 @@ c_info "Using temporary directory: $TDIR"
 
 if [[ $EUID -ne 0 ]]; then c_info "The next stage runs as sudo, please enter password if asked."; fi
 
-SKIP_COMPRESS=0; if [ ! -z "$BUILD_IMAGE" ]; then SKIP_COMPRESS=1; fi
-
 ex_files=$(mktemp); echo $EXTRA_FILES > $ex_files
 
 sudo $spath/buildstrap $ARCH $DISTRO $TDIR $OUT_TMP \
 		"$(make_csv "$PACKAGES")"\
-		$ex_files $INSTALL_BCC $SKIP_COMPRESS
+		$ex_files $INSTALL_BCC $SKIP_DEVICE
 rm $ex_files
 
 # If we only wanted to prepare a rootfs and don't have
 # a device connected, then just echo that and skip cleanup
-if [ ! -z "$BUILD_IMAGE" ]; then
-	c_info "For --build-image, only the image is built."
+if [ $SKIP_DEVICE -eq 1 ]; then
+	c_info "Device preparation is being skipped for the selected options"
 	c_info "any builds that need to happen on device may be cloned but not built."
 	sudo $spath/buildimage $OUT_TMP $(dirname $BUILD_IMAGE)/$(basename $BUILD_IMAGE)
 	sudo chmod a+rw $(dirname $BUILD_IMAGE)/$(basename $BUILD_IMAGE)

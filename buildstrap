@@ -11,7 +11,7 @@ OUT_TMP=$4
 PACKAGES=$5
 EXTRA_FILES="$(cat $6)"
 INSTALL_BCC=$7
-SKIP_COMPRESS=$8
+SKIP_DEVICE=$8		# Skip any device-specific stages
 
 time qemu-debootstrap --arch $ARCH --include=$PACKAGES \
 	$DISTRO $OUT_TMP http://deb.debian.org/debian/
@@ -65,7 +65,7 @@ cp $spath/bcc/build-bcc.sh $TDIR/debian/bcc-master/; fi
 # Should be really do this?
 chmod -R 0777 $TDIR/
 
-if [ $SKIP_COMPRESS -eq 1 ]; then exit 0; fi
+if [ $SKIP_DEVICE -eq 1 ]; then exit 0; fi
 
 c_info "Compressing new filesystem to prepare to push to Android /data/androdeb/"
 tar -zcf $TDIR/deb.tar.gz -C $TDIR debian
