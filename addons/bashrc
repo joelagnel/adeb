@@ -16,3 +16,7 @@ echo ""
 touch .banner.shown
 
 fi
+
+homedir=$( getent passwd "$USER" | cut -d: -f6 )
+export HOME=$homedir
+cd $HOME
