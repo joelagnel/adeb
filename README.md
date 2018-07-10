@@ -50,8 +50,8 @@ git clone https://github.com/joelagnel/androdeb.git
 cd androdeb
 
 # Add some short cuts:
-sudo ln -s ./adeb /usr/bin/adeb
-sudo ln -s ./androdeb /usr/bin/androdeb
+sudo ln -s $(pwd)/adeb /usr/bin/adeb
+sudo ln -s $(pwd)/androdeb /usr/bin/androdeb
 ```
 
 * Fastest way of installing adeb onto your device:
