@@ -68,7 +68,7 @@ case $key in
 esac
 done
 
-[ -z $ASHELL ] && box_out "androdeb: $VERSION"
+[ -z $ASHELL ] && box_out "adeb: $VERSION"
 
 if [ ! -z $BTAR ] && [ -z $TARDIR ]; then
 	TARDIR=$spath

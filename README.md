@@ -1,10 +1,11 @@
 androdeb
 --------
 
-**androdeb** provides a powerful Linux shell environment where one can
-run popular and mainstream Linux tracing, compiling, editing and other
-development tools on an existing Android device. All the commands typically
-available on a modern Linux system are supported in androdeb.
+**androdeb** (also known as **adeb**) provides a powerful Linux shell
+environment where one can run popular and mainstream Linux tracing, compiling,
+editing and other development tools on an existing Android device. All the
+commands typically available on a modern Linux system are supported in
+androdeb.
 
 Usecases
 --------
@@ -47,50 +48,53 @@ Quick Start Instructions
 ```
 git clone https://github.com/joelagnel/androdeb.git
 cd androdeb
+
+# Add some short cuts:
+sudo ln -s ./adeb /usr/bin/adeb
 sudo ln -s ./androdeb /usr/bin/androdeb
 ```
 
-* Fastest way of installing androdeb onto your device:
+* Fastest way of installing adeb onto your device:
 ```
 # First make sure device is connected to system
-androdeb prepare --download
+adeb prepare --download
 ```
 
-* Now run androdeb shell to enter your new environment!:
+* Now run adeb shell to enter your new environment!:
 ```
-androdeb shell
+adeb shell
 ```
 
 * Once done, hit `CTRL + D` and you will exit out of the shell.
 To remove androdeb from the device, run:
 ```
-androdeb remove
+adeb remove
 ```
 If you have multiple devices connected, please add `-s <serialnumber>`.
 Serial numbers of all devices connected can be obtained by `adb devices`.
 
 * To update the androdeb you cloned on your host, run:
 ```
-androdeb pull
+adeb pull
 ```
 
 To update an existing androdeb clone on your host, run:
 ```
-androdeb git-pull
+adeb git-pull
 ```
 
 More advanced usage instructions
 --------------------------------
 ### Install kernel headers in addition to preparing androdeb device:
 ```
-androdeb prepare --download --kernelsrc /path/to/kernel-source
+adeb prepare --download --kernelsrc /path/to/kernel-source
 ```
 
 ### Update kernel headers onto an already prepared device:
 
 If you need to put kernel sources for an existing install, run:
 ```
-androdeb prepare --kernelsrc /path/to/kernel-source --skip-install
+adeb prepare --kernelsrc /path/to/kernel-source --skip-install
 ```
 Note: The kernel sources should have been built (atleast build should have started).
 
@@ -98,23 +102,23 @@ Note: The kernel sources should have been built (atleast build should have start
 
 The androdeb fs will be prepared locally by downloading packages as needed:
 ```
-androdeb prepare --fullbuild
+adeb prepare --fullbuild
 ```
 This is unlike `--download` where the androdeb rootfs is itself pulled from the web.
 
 ### Add kernel headers to device in addition to building locally:
 ```
-androdeb prepare --fullbuild --kernelsrc /path/to/kernel-source/
+adeb prepare --fullbuild --kernelsrc /path/to/kernel-source/
 ```
 
 ### Instead of `--fullbuild`, customize what you install:
 ```
-androdeb prepare --editors --compilers
+adeb prepare --editors --compilers
 ```
 
 ### Install only BCC:
 ```
-androdeb prepare --bcc --kernelsrc /path/to/kernel-source/
+adeb prepare --bcc --kernelsrc /path/to/kernel-source/
 ```
 Note: BCC is built while being installed. Also `--kernelsrc` is
 recommended for tools to function unless device has them
@@ -122,7 +126,7 @@ already.
 
 ### Extract the FS from the device, after its prepared:
 ```
-androdeb prepare --fullbuild --buildtar /path/
+adeb prepare --fullbuild --buildtar /path/
 ```
 After device is prepared, it will extract the root fs from it
 and store it as a tar archive at `/path/androdeb-fs.tgz`. This
@@ -130,12 +134,12 @@ can be used later.
 
 ### Use a previously prepared androdeb rootfs tar from local:
 ```
-androdeb prepare --archive /path/androdeb-fs.tgz
+adeb prepare --archive /path/androdeb-fs.tgz
 ```
 
 ### Build a standalone raw EXT4 image out of the FS:
 ```
-androdeb prepare --buildimage /path/to/image.img
+adeb prepare --buildimage /path/to/image.img
 ```
 This can then be passed to Qemu as -hda. Note: This option doesn't need a
 device connected.
@@ -145,7 +149,7 @@ By default androdeb assumes the target Android device is based on ARM64
 processor architecture. For other architectures, use the --arch option. For
 example for x86_64 architecture, run:
 ```
-androdeb prepare --arch amd64 --bcc --kernelsrc /path/to/kernel-source/
+adeb prepare --arch amd64 --bcc --kernelsrc /path/to/kernel-source/
 ```
 Note: The --download option ignores the --arch flag. This is because we only
 provide pre-built filesystems for ARM64 at the moment.

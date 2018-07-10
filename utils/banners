@@ -7,7 +7,7 @@ print_prepare_banner() {
 
 usage() {
 	c_info "USAGE:"
-	c_info "androdeb"
+	c_info "adeb"
 	c_info "	shell		Enter the androdeb shell environment and get to work!"
 	c_info "	remove		Remove androdeb from the device"
 	c_info "	git-pull	Git pull androdeb to update it on your host"

@@ -24,7 +24,7 @@ source and the sources should be built atleast once in-tree. Once it is built,
 run the following command pointing androdeb to the kernel sources which will
 have it extract headers from there and push them to the device.
 ```
-androdeb prepare --download --bcc --kernelsrc /path/to/kernel-source/
+adeb prepare --download --bcc --kernelsrc /path/to/kernel-source/
 ```
 This downloads and installs a pre-built androdeb filesystem containing a recent
 version of BCC onto the android device, extracts kernel headers from the source
@@ -33,7 +33,7 @@ only if the target architecture is ARM64. For other architectures, see the
 [Other Architectures
 section](https://github.com/joelagnel/androdeb/blob/master/BCC.md#other-architectures-other-than-arm64)
 
-Now to run BCC, just start an androdeb shell: `androdeb shell`. This uses adb
+Now to run BCC, just start an adeb shell: `adeb shell`. This uses adb
 as the backend to start a shell into your androdeb environment. Try running
 `opensnoop` or any of the other BCC tracers to confirm that the setup worked
 correctly.
@@ -61,11 +61,11 @@ CONFIG_PREEMPTIRQ_EVENTS=y
 Build BCC during androdeb install (Optional)
 --------------------------------------------
 If you would like the latest BCC installation on your Android device, we
-recommend dropping the `--download` option from the androdeb command above.
-This will make androdeb clone and build the latest version for of BCC for the
+recommend dropping the `--download` option from the adeb command above.
+This will make androdeb clone and build the latest version of BCC for the
 target architecture. Note that this is much slower that `--download`.
 ```
-androdeb prepare --bcc --kernelsrc /path/to/kernel-source/
+adeb prepare --bcc --kernelsrc /path/to/kernel-source/
 ```
 
 Other Architectures (other than ARM64)
@@ -74,7 +74,7 @@ By default androdeb assumes the target Android device is based on ARM64
 processor architecture. For other architectures, use the --arch option. For
 example for x86_64 architecture, run:
 ```
-androdeb prepare --arch amd64 --bcc --kernelsrc /path/to/kernel-source/
+adeb prepare --arch amd64 --bcc --kernelsrc /path/to/kernel-source/
 ```
 Note: The --download option ignores the --arch flag. This is because we only
 provide pre-built filesystems for ARM64 at the moment.
