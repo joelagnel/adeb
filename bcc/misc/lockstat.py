@@ -1,4 +1,4 @@
-#!/usr/bin/env bcc-py
+#!/usr/bin/python
 #
 # lockstat Trace and display lock contention stats
 #
@@ -15,22 +15,23 @@ import argparse
 import subprocess
 import os
 
+# One Lock object per TGID and uaddr.
 class Lock(object):
     def __init__(self):
         self.contention_count = 0
         self.elapsed_blocked = 0
         self.thread_count = 0
+        self.last_stack_syms = []
 
-    def update(self, count, block_time):
+    def update(self, count, block_time, last_stack_syms):
         self.contention_count += count
         self.elapsed_blocked += block_time
         self.thread_count += 1
+        self.last_stack_syms = last_stack_syms
 
 def run_command_get_pid(command):
         p = subprocess.Popen(command.split())
         return p.pid
-
-
 
 examples = """
 EXAMPLES:
@@ -103,15 +104,16 @@ struct lock_key_t {
 struct lock_info_t {
         u64 elapsed_blocked;
         u64 contention_count;
+        u64 sid;
 };
-
 
 BPF_HASH(pid_lock, u32, u64);
 BPF_HASH(pid_blocktime, u32, u64);
 BPF_HASH(tgid_comm, u32, struct comm_t);
 BPF_HASH(lock_stats, struct lock_key_t, struct lock_info_t, 1000000);
+BPF_STACK_TRACE(stack_traces, 16384);
 
-static inline int update_stats(u32 pid, u32 tgid, u64 uaddr, u64 block_time) {
+static inline int update_stats(u32 pid, u32 tgid, u64 uaddr, u64 block_time, u64 sid) {
         struct lock_key_t key = {};
         struct lock_info_t zero = {};
         struct lock_info_t *info;
@@ -122,6 +124,7 @@ static inline int update_stats(u32 pid, u32 tgid, u64 uaddr, u64 block_time) {
         info = lock_stats.lookup_or_init(&key, &zero);
         info->elapsed_blocked += block_time;
         info->contention_count++;
+        info->sid = sid;
 
         if (0 == tgid_comm.lookup(&tgid)) {
             struct comm_t comm;
@@ -168,12 +171,15 @@ int sys_futex_exit(struct pt_regs *ctx) {
         u64 *uaddr = pid_lock.lookup(&pid);
         u64 timestamp = bpf_ktime_get_ns();
         u64 elapsed;
+        u64 sid;
 
         if (blocktime == 0 || uaddr == 0)
                 return 0; // not FUTEX_WAIT, or (less likely) missed futex_enter
 
         elapsed = timestamp - *blocktime;
-        update_stats(pid, tgid, *uaddr, elapsed);
+
+        sid = stack_traces.get_stackid(ctx, BPF_F_USER_STACK);
+        update_stats(pid, tgid, *uaddr, elapsed, sid);
         pid_lock.delete(&pid);
         pid_blocktime.delete(&pid);
 
@@ -202,19 +208,58 @@ bpf_program = BPF(text=bpf_source)
 bpf_program.attach_kprobe(event="SyS_futex", fn_name="sys_futex_enter")
 bpf_program.attach_kretprobe(event="SyS_futex", fn_name="sys_futex_exit")
 
+def get_syms(stack, pid):
+    global bpf_program
+    syms = []
+    for addr in stack:
+        s = bpf_program.sym(addr, pid, show_offset=True)
+        syms.append(s)
+    return syms
+
+def print_syms(syms):
+    print("=========")
+    for f in syms:
+        print(f)
+    print("=========")
+
+def is_android_monitor_lock(syms):
+    for s in syms:
+        if 'art::Monitor::Lock' in s:
+            return True
+    return False
+
+def disp_stack(stack, pid):
+    for addr in stack:
+        s = bpf_program.sym(addr, pid, show_offset=True)
+
 def create_tgid_stats():
+        global bpf_program
         stats = bpf_program["lock_stats"]
         res = {}
+        stack_traces = bpf_program['stack_traces']
         for key, val in stats.items():
+                # Only display Android monitor locks
+                if val.sid >= 0:
+                    ust = stack_traces.walk(val.sid)
+                    syms = get_syms(ust, key.pid)
+                    if not is_android_monitor_lock(syms):
+                        continue
+                else:
+                    continue
+
                 if not key.tgid in res:
                         res[key.tgid] = {}
                 if not key.uaddr in res[key.tgid]:
                         res[key.tgid][key.uaddr] = Lock()
+
                 lock = res[key.tgid][key.uaddr]
-                lock.update(val.contention_count, val.elapsed_blocked)
+                lock.update(val.contention_count, val.elapsed_blocked, syms)
         return res
 
 def print_comm_stats(stats):
+        if stats == {}:
+            return
+
         comms = bpf_program["tgid_comm"]
         print("\n%s:" % (datetime.now().strftime("%H:%M:%S")))
         for tgid, locks in stats.items():
@@ -228,6 +273,12 @@ def print_comm_stats(stats):
                           (addr, stats.elapsed_blocked / 1000000,
                            stats.contention_count, stats.thread_count,
                            stats.elapsed_blocked / stats.contention_count / 1000))
+
+                    # No use of displaying lock stacks since we're only
+                    # filtering for Android monitor locks.
+                    #
+                    # print("Last stack for this lock:")
+                    # print_syms(stats.last_stack_syms)
 
 count_so_far = 0
 while True:
