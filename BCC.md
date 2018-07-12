@@ -24,7 +24,7 @@ source and the sources should be built atleast once in-tree. Once it is built,
 run the following command pointing androdeb to the kernel sources which will
 have it extract headers from there and push them to the device.
 ```
-adeb prepare --download --bcc --kernelsrc /path/to/kernel-source/
+adeb prepare --build --bcc --kernelsrc /path/to/kernel-source/
 ```
 This downloads and installs a pre-built androdeb filesystem containing a recent
 version of BCC onto the android device, extracts kernel headers from the source
