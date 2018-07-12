@@ -60,8 +60,9 @@ sudo ln -s $(pwd)/androdeb /usr/bin/androdeb
 # Then run, for the base image:
 adeb prepare
 ```
-# The previous command only downloads and installs the base image.
-# Instead if you want to download and install the full image, do:
+The previous command only downloads and installs the base image.
+Instead if you want to download and install the full image, do:
+```
 adeb prepare --full
 ```
 
