@@ -55,9 +55,9 @@ sudo ln -s $(pwd)/androdeb /usr/bin/androdeb
 ```
 
 * Installing adeb onto your device:
+First make sure device is connected to system
+Then run, for the base image:
 ```
-# First make sure device is connected to system
-# Then run, for the base image:
 adeb prepare
 ```
 The previous command only downloads and installs the base image.
@@ -144,7 +144,7 @@ adeb prepare --archive /path/androdeb-fs.tgz
 
 ### Build a standalone raw EXT4 image out of the FS:
 ```
-adeb prepare --buildimage /path/to/image.img
+adeb prepare --build-image /path/to/image.img
 ```
 This can then be passed to Qemu as -hda. Note: This option doesn't need a
 device connected.
