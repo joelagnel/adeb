@@ -54,10 +54,15 @@ sudo ln -s $(pwd)/adeb /usr/bin/adeb
 sudo ln -s $(pwd)/androdeb /usr/bin/androdeb
 ```
 
-* Fastest way of installing adeb onto your device:
+* Installing adeb onto your device:
 ```
 # First make sure device is connected to system
-adeb prepare --download
+# Then run, for the base image:
+adeb prepare
+```
+# The previous command only downloads and installs the base image.
+# Instead if you want to download and install the full image, do:
+adeb prepare --full
 ```
 
 * Now run adeb shell to enter your new environment!:
@@ -87,7 +92,7 @@ More advanced usage instructions
 --------------------------------
 ### Install kernel headers in addition to preparing androdeb device:
 ```
-adeb prepare --download --kernelsrc /path/to/kernel-source
+adeb prepare --kernelsrc /path/to/kernel-source
 ```
 
 ### Update kernel headers onto an already prepared device:
@@ -102,31 +107,30 @@ Note: The kernel sources should have been built (atleast build should have start
 
 The androdeb fs will be prepared locally by downloading packages as needed:
 ```
-adeb prepare --fullbuild
+adeb prepare --build
 ```
-This is unlike `--download` where the androdeb rootfs is itself pulled from the web.
+This is unlike the default behavior, where the androdeb rootfs is itself pulled from the web.
+
+If you wish to do a full build (that is locally prepare a rootfs with all packages, including bcc, then do):
+```
+adeb prepare --full --build
+```
 
 ### Add kernel headers to device in addition to building locally:
 ```
-adeb prepare --fullbuild --kernelsrc /path/to/kernel-source/
+adeb prepare --build --kernelsrc /path/to/kernel-source/
 ```
 
-### Instead of `--fullbuild`, customize what you install:
+### Build/install a base image with BCC:
 ```
-adeb prepare --editors --compilers
+adeb prepare --build --bcc --kernelsrc /path/to/kernel-source/
 ```
-
-### Install only BCC:
-```
-adeb prepare --bcc --kernelsrc /path/to/kernel-source/
-```
-Note: BCC is built while being installed. Also `--kernelsrc` is
-recommended for tools to function unless device has them
-already.
+Note: BCC is built from source. Also `--kernelsrc` is recommended for tools to
+function unless device has them already.
 
 ### Extract the FS from the device, after its prepared:
 ```
-adeb prepare --fullbuild --buildtar /path/
+adeb prepare --buildtar /path/
 ```
 After device is prepared, it will extract the root fs from it
 and store it as a tar archive at `/path/androdeb-fs.tgz`. This
@@ -149,7 +153,7 @@ By default androdeb assumes the target Android device is based on ARM64
 processor architecture. For other architectures, use the --arch option. For
 example for x86_64 architecture, run:
 ```
-adeb prepare --arch amd64 --bcc --kernelsrc /path/to/kernel-source/
+adeb prepare --build --arch amd64 --bcc --kernelsrc /path/to/kernel-source/
 ```
 Note: The --download option ignores the --arch flag. This is because we only
 provide pre-built filesystems for ARM64 at the moment.

@@ -65,8 +65,14 @@ recommend dropping the `--download` option from the adeb command above.
 This will make androdeb clone and build the latest version of BCC for the
 target architecture. Note that this is much slower that `--download`.
 ```
-adeb prepare --bcc --kernelsrc /path/to/kernel-source/
+adeb prepare --build --bcc --kernelsrc /path/to/kernel-source/
 ```
+Note that the full androdeb install already contains recent BCC:
+```
+adeb prepare --full
+```
+This downloads and installs a prebuilt FS and is faster than building locally
+using `--build`.
 
 Other Architectures (other than ARM64)
 -----------------------

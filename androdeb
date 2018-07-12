@@ -13,12 +13,14 @@ source $spath/utils/banners
 # Set default vars
 DISTRO=buster; ARCH=arm64
 ADB="adb"
+FULL=0				# Default to a minimal install
+DOWNLOAD=1			# Default to downloading from web
 SKIP_DEVICE=0			# Skip device preparation
 INSTALL_BCC=0			# Decide if BCC is to be installed
 
 # Default packages
-DEFAULT_PACKAGES+="bash
-ca-certificates"
+PACKAGES=""
+DEFAULT_PACKAGES="bash ca-certificates apt net-tools iputils-ping procps vim"
 
 EXTRA_FILES="none"
 
@@ -41,26 +43,22 @@ if [ "x$ASHELL" == "x1" ]; then
 fi
 
 case $key in
-    prepare) PREPARE=1;  shift || true;    ;;
     shell) ASHELL=1;     shift || true;     ;;
     remove) REMOVE=1;     shift || true;     ;;
     git-pull) GIT_PULL=1; shift || true; ;;
     pull) PULL=1; shift || true; break	;;
     push) PUSH=1; shift || true; break	;;
+    prepare) PREPARE=1;  shift || true;    ;;
+    --full) FULL=1; config_full_build; shift || true; ;;
     --arch) ARCH=$2; shift || true; shift || true; ;;
     --archive) TARF=$2; shift || true; shift || true; ;;
-    --tracers) source $spath/packages/tracers; shift || true; ;;
-    --compilers) source $spath/packages/compilers; shift || true; ;;
-    --editors) source $spath/packages/editors; shift || true; ;;
-    --scheduler) source $spath/packages/scheduler; shift || true; ;;
-    --fullbuild) config_full_build; shift || true; ;;
-    --download) DOWNLOAD=1; shift || true; ;;
     --bcc) source $spath/packages/bcc; shift || true;     ;;
     --kernelsrc) KERNELSRC="$2"; shift || true;     shift || true;     ;;
     --skip-install) SKIP_INSTALL=1; shift || true; ;;
     --kernel-headers-targz) KERNELHDRS=$2; shift || true;	shift || true;	;;
     --tempdir) TDIR="$2"; shift || true;     shift || true;     ;;
-    --buildtar) BTAR=1; TARDIR="$2"; shift || true;     shift || true;     ;;
+    --build) DOWNLOAD=0;  shift || true;     ;;
+    --buildtar) BTAR=1; DOWNLOAD=0; TARDIR="$2"; shift || true;     shift || true;     ;;
     --device|-s) ADB="$ADB -s $2"; shift || true; shift || true; ;;
     --build-image) BI=1; BUILD_IMAGEF=$2; SKIP_DEVICE=1; shift || true; shift || true; ;;
     --debug) set -x; shift || true; ;;
@@ -69,6 +67,14 @@ esac
 done
 
 [ -z $ASHELL ] && box_out "adeb: $VERSION"
+
+if [ $FULL -eq 1 ]; then
+	FNAME=androdeb-fs.tgz.zip
+	FNAME_UZ=androdeb-fs.tgz
+else
+	FNAME=androdeb-fs-minimal.tgz.zip
+	FNAME_UZ=androdeb-fs-minimal.tgz
+fi
 
 if [ ! -z $BTAR ] && [ -z $TARDIR ]; then
 	TARDIR=$spath
@@ -110,11 +116,6 @@ if [ ! -z "$PUSH" ]; then
 	dest=/data/androdeb/debian/$1
 	$ADB push $sync "${files[@]}" $dest
 	exit 0
-fi
-
-if [ -z "$ASHELL" ] && [ -z "$REMOVE" ] && [ -z "$PACKAGES" ]; then
-	c_info "No packages specified, so I'm going to build/install all packages (--fullbuild)"
-	config_full_build
 fi
 
 if [[ ! -z ${TARDIR+x} ]] && [[ ! -d $TARDIR ]]; then die 7 "Tar dir specified doesn't exist"; fi
@@ -198,7 +199,7 @@ function push_unpack_tarred_headers() {
 }
 
 function all_done_banner() {
-	c_info "All done! Run \"androdeb shell\" to enter environment"
+	c_info "All done! Run \"adeb shell\" to enter environment"
 }
 
 # Prepare is the last command checked
@@ -218,12 +219,14 @@ MKTEMP=0; if [[ -z ${TDIR+x} ]]  || [[ ! -d "${TDIR}" ]]; then
 rm -rf $TDIR/*
 TDIR_ABS=$( cd "$TDIR" ; pwd -P )
 
-if [ ! -z "$DOWNLOAD" ]; then
+if [ $DOWNLOAD -eq 1 ]; then
    c_info "Downloading Androdeb from the web..."; c_info ""
+
    # Github dropped tar gz support! ##?#??#! Now we've to zip everything.
-   curl -L https://github.com/joelagnel/androdeb/releases/download/$VERSION/androdeb-fs.tgz.zip --output $TDIR_ABS/androdeb-fs.tgz.zip;
-   unzip -e $TDIR_ABS/androdeb-fs.tgz.zip -d $TDIR_ABS/
-   TARF=$TDIR_ABS/androdeb-fs.tgz; fi
+   curl -L https://github.com/joelagnel/androdeb/releases/download/$VERSION/$FNAME --output $TDIR_ABS/$FNAME
+   unzip -e $TDIR_ABS/$FNAME -d $TDIR_ABS/
+   TARF=$TDIR_ABS/$FNAME_UZ
+fi
 
 OUT_TMP=$TDIR/debian; rm -rf $OUT_TMP; mkdir -p $OUT_TMP
 
@@ -312,13 +315,21 @@ if [ $INSTALL_BCC -eq 1 ]; then
 	$ADB shell /data/androdeb/run-command /bcc-master/build-bcc.sh;
 fi
 
-do_cleanup
-
 # Extract a tar of the built, compiled and installed androdeb env
 if [[ ! -z ${TARDIR+x} ]]; then
-	c_info "Creating and pulling tarball of androdeb env from device"
-	$ADB shell /data/androdeb/build-debian-tar
-	$ADB pull /data/androdeb/androdeb-fs.tgz $TARDIR/
-	$ADB shell rm /data/androdeb/androdeb-fs.tgz; fi
+	c_info "Creating tarball"
+	pushd $TARDIR
+	if [ $INSTALL_BCC -eq 0 ]; then
+		mv $TDIR/deb.tar.gz $FNAME_UZ
+	else
+		$ADB shell /data/androdeb/build-debian-tar
+		$ADB pull /data/androdeb/androdeb-fs.tgz $FNAME_UZ
+		$ADB shell rm /data/androdeb/androdeb-fs.tgz;
+	fi
+	zip -r $FNAME $FNAME_UZ
+	popd
+fi
+
+do_cleanup
 
 all_done_banner
