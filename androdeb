@@ -223,7 +223,7 @@ if [ $DOWNLOAD -eq 1 ]; then
    c_info "Downloading Androdeb from the web..."; c_info ""
 
    # Github dropped tar gz support! ##?#??#! Now we've to zip everything.
-   curl -L https://github.com/joelagnel/androdeb/releases/download/$VERSION/$FNAME --output $TDIR_ABS/$FNAME
+   curl -L https://github.com/joelagnel/adeb/releases/download/$VERSION/$FNAME --output $TDIR_ABS/$FNAME
    unzip -e $TDIR_ABS/$FNAME -d $TDIR_ABS/
    TARF=$TDIR_ABS/$FNAME_UZ
 fi

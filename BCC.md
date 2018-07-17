@@ -13,28 +13,28 @@ documentation.
 
 Quick Start
 -----------
-androdeb is the primary vehicle for running BCC on Android. It supports
+adeb is the primary vehicle for running BCC on Android. It supports
 preparing the target Android device with necessary kernel headers, cloning and
-building BCC on device, and other setup. Take a look a quick look at [androdeb
-README](https://github.com/joelagnel/androdeb/blob/master/README.md) so that
+building BCC on device, and other setup. Take a look a quick look at [adeb
+README](https://github.com/joelagnel/adeb/blob/master/README.md) so that
 you're familiar with what it is.
 
 For setting up BCC on your Android device, you need the target device's kernel
 source and the sources should be built atleast once in-tree. Once it is built,
-run the following command pointing androdeb to the kernel sources which will
+run the following command pointing adeb to the kernel sources which will
 have it extract headers from there and push them to the device.
 ```
 adeb prepare --build --bcc --kernelsrc /path/to/kernel-source/
 ```
-This downloads and installs a pre-built androdeb filesystem containing a recent
+This downloads and installs a pre-built adeb filesystem containing a recent
 version of BCC onto the android device, extracts kernel headers from the source
 tree pointed to and does other setup. Note that `--download` option will work
 only if the target architecture is ARM64. For other architectures, see the
 [Other Architectures
-section](https://github.com/joelagnel/androdeb/blob/master/BCC.md#other-architectures-other-than-arm64)
+section](https://github.com/joelagnel/adeb/blob/master/BCC.md#other-architectures-other-than-arm64)
 
 Now to run BCC, just start an adeb shell: `adeb shell`. This uses adb
-as the backend to start a shell into your androdeb environment. Try running
+as the backend to start a shell into your adeb environment. Try running
 `opensnoop` or any of the other BCC tracers to confirm that the setup worked
 correctly.
 
@@ -58,16 +58,16 @@ CONFIG_DEBUG_PREEMPT=y
 CONFIG_PREEMPTIRQ_EVENTS=y
 ```
 
-Build BCC during androdeb install (Optional)
+Build BCC during adeb install (Optional)
 --------------------------------------------
 If you would like the latest BCC installation on your Android device, we
 recommend dropping the `--download` option from the adeb command above.
-This will make androdeb clone and build the latest version of BCC for the
+This will make adeb clone and build the latest version of BCC for the
 target architecture. Note that this is much slower that `--download`.
 ```
 adeb prepare --build --bcc --kernelsrc /path/to/kernel-source/
 ```
-Note that the full androdeb install already contains recent BCC:
+Note that the full adeb install already contains recent BCC:
 ```
 adeb prepare --full
 ```
@@ -76,7 +76,7 @@ using `--build`.
 
 Other Architectures (other than ARM64)
 -----------------------
-By default androdeb assumes the target Android device is based on ARM64
+By default adeb assumes the target Android device is based on ARM64
 processor architecture. For other architectures, use the --arch option. For
 example for x86_64 architecture, run:
 ```
