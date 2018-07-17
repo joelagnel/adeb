@@ -1,11 +1,11 @@
-androdeb
+adeb
 --------
 
-**androdeb** (also known as **adeb**) provides a powerful Linux shell
+**adeb** (also known as **androdeb**) provides a powerful Linux shell
 environment where one can run popular and mainstream Linux tracing, compiling,
 editing and other development tools on an existing Android device. All the
 commands typically available on a modern Linux system are supported in
-androdeb.
+adeb.
 
 Usecases
 --------
@@ -20,12 +20,12 @@ from the web.
 3. Using these one can run popular tools such as BCC that are difficult to run
 in an Android environment due to lack of packages, dependencies and
 cross-compilation needed for their operation. [Check BCC on Android using
-androdeb](https://github.com/joelagnel/androdeb/blob/master/BCC.md) for more
+adeb](https://github.com/joelagnel/adeb/blob/master/BCC.md) for more
 information on that.
 
 4. No more crippled tools: Its often a theme to build a static binary with
 features disabled, because you couldn't cross-compile the feature's dependencies. One
-classic example is perf. However, thanks to androdeb, we can build perf natively
+classic example is perf. However, thanks to adeb, we can build perf natively
 on device without having to cripple it.
 
 Requirements for running
@@ -34,7 +34,7 @@ Target:
 An ARM64 android N or later device which has "adb root" supported. Typically
 this is a build in a userdebug configuration. Device should have atleast 2 GB
 free space in the data partition. If you would like to use other architectures,
-see the [Other Architectures](https://github.com/joelagnel/androdeb/blob/master/README.md#how-to-use-androdeb-for-other-architectures-other-than-arm64) section.
+see the [Other Architectures](https://github.com/joelagnel/adeb/blob/master/README.md#how-to-use-adeb-for-other-architectures-other-than-arm64) section.
 
 Host:
 A machine running recent Ubuntu or Debian, with 4GB of memory and 4GB free space.
@@ -44,14 +44,13 @@ Other distributions may work but they are not tested.
 
 Quick Start Instructions
 ------------------------
-* Clone androdeb repository:
+* Clone adeb repository:
 ```
-git clone https://github.com/joelagnel/androdeb.git
-cd androdeb
+git clone https://github.com/joelagnel/adeb.git
+cd adeb
 
 # Add some short cuts:
 sudo ln -s $(pwd)/adeb /usr/bin/adeb
-sudo ln -s $(pwd)/androdeb /usr/bin/androdeb
 ```
 
 * Installing adeb onto your device:
@@ -72,26 +71,26 @@ adeb shell
 ```
 
 * Once done, hit `CTRL + D` and you will exit out of the shell.
-To remove androdeb from the device, run:
+To remove adeb from the device, run:
 ```
 adeb remove
 ```
 If you have multiple devices connected, please add `-s <serialnumber>`.
 Serial numbers of all devices connected can be obtained by `adb devices`.
 
-* To update the androdeb you cloned on your host, run:
+* To update the adeb you cloned on your host, run:
 ```
 adeb pull
 ```
 
-To update an existing androdeb clone on your host, run:
+To update an existing adeb clone on your host, run:
 ```
 adeb git-pull
 ```
 
 More advanced usage instructions
 --------------------------------
-### Install kernel headers in addition to preparing androdeb device:
+### Install kernel headers in addition to preparing adeb device:
 ```
 adeb prepare --kernelsrc /path/to/kernel-source
 ```
@@ -106,11 +105,11 @@ Note: The kernel sources should have been built (atleast build should have start
 
 ### Build and prepare device with a custom rootfs locally:
 
-The androdeb fs will be prepared locally by downloading packages as needed:
+The adeb fs will be prepared locally by downloading packages as needed:
 ```
 adeb prepare --build
 ```
-This is unlike the default behavior, where the androdeb rootfs is itself pulled from the web.
+This is unlike the default behavior, where the adeb rootfs is itself pulled from the web.
 
 If you wish to do a full build (that is locally prepare a rootfs with all packages, including bcc, then do):
 ```
@@ -134,12 +133,12 @@ function unless device has them already.
 adeb prepare --buildtar /path/
 ```
 After device is prepared, it will extract the root fs from it
-and store it as a tar archive at `/path/androdeb-fs.tgz`. This
+and store it as a tar archive at `/path/adeb-fs.tgz`. This
 can be used later.
 
-### Use a previously prepared androdeb rootfs tar from local:
+### Use a previously prepared adeb rootfs tar from local:
 ```
-adeb prepare --archive /path/androdeb-fs.tgz
+adeb prepare --archive /path/adeb-fs.tgz
 ```
 
 ### Build a standalone raw EXT4 image out of the FS:
@@ -149,8 +148,8 @@ adeb prepare --build-image /path/to/image.img
 This can then be passed to Qemu as -hda. Note: This option doesn't need a
 device connected.
 
-### How to use androdeb for other Architectures (other than ARM64)
-By default androdeb assumes the target Android device is based on ARM64
+### How to use adeb for other Architectures (other than ARM64)
+By default adeb assumes the target Android device is based on ARM64
 processor architecture. For other architectures, use the --arch option. For
 example for x86_64 architecture, run:
 ```
