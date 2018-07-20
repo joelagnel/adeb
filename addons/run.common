@@ -6,6 +6,7 @@ do_mounts()
 	mount --bind /dev/pts debian/dev/pts > /dev/null
 
 	mount --bind /sys debian/sys/ > /dev/null
+	mount --bind /sys/fs/bpf/ debian/sys/fs/bpf/ > /dev/null
 	mount --bind /sys/kernel/debug/ debian/sys/kernel/debug/ > /dev/null
 	mount --bind /sys/kernel/debug/tracing/ debian/sys/kernel/debug/tracing/
 
