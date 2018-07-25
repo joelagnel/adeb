@@ -122,6 +122,7 @@ if [[ ! -z ${TARDIR+x} ]] && [[ ! -d $TARDIR ]]; then die 7 "Tar dir specified d
 
 if [ -z $BI ]; then
 	[ -z $ASHELL ] && c_info "Looking for device.."
+	set +e
 	do_adb_root "$ADB"
 
 	if [ $? -ne 0 ]; then
@@ -133,6 +134,7 @@ if [ -z $BI ]; then
 		c_error "packages on your distro, or by installing the Android SDK."
 		die 3 "Exiting."
 	fi
+	set -e
 else
 	[ ! -z $BUILD_IMAGEF ] || die 8 "--build-image passed but no image file provided"
 fi
