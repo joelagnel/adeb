@@ -51,6 +51,13 @@ cd adeb
 
 # Add some short cuts:
 sudo ln -s $(pwd)/adeb /usr/bin/adeb
+
+# For cached image downloads which result in a huge speed-up,
+# You could set the ADEB_REPO_URL environment variable in your
+# bashrc file.
+# Disclaimer: Google is not liable for the below URL and this
+#             is just an example.
+export ADEB_REPO_URL="github.com/joelagnel/"
 ```
 
 * Installing adeb onto your device:
