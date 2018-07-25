@@ -51,7 +51,7 @@ case $key in
     prepare) PREPARE=1;  shift || true;    ;;
     --full) FULL=1; config_full_build; shift || true; ;;
     --arch) ARCH=$2; shift || true; shift || true; ;;
-    --archive) TARF=$2; shift || true; shift || true; ;;
+    --archive) DOWNLOAD=0; TARF=$2; shift || true; shift || true; ;;
     --bcc) source $spath/packages/bcc; shift || true;     ;;
     --kernelsrc) KERNELSRC="$2"; shift || true;     shift || true;     ;;
     --skip-install) SKIP_INSTALL=1; shift || true; ;;
