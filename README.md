@@ -44,9 +44,8 @@ Other distributions may work but they are not tested.
 
 Quick Start Instructions
 ------------------------
-* Clone adeb repository:
+* First clone this repository into adb and cd into it.
 ```
-git clone https://github.com/joelagnel/adeb.git
 cd adeb
 
 # Add some short cuts:
