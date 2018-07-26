@@ -1,0 +1,19 @@
+name: "adeb"
+description: "adeb (also known as androdeb) provides a powerful Linux shell
+environment where one can run popular and mainstream Linux tracing, compiling,
+editing and other development tools on an existing Android device. All the
+commands typically available on a modern Linux system are supported in adeb."
+
+third_party {
+  url {
+    type: HOMEPAGE
+    value: "https://github.com/joelagnel/adeb/README.md"
+  }
+  url {
+    type: GIT
+    value: "https://github.com/joelagnel/adeb.git"
+  }
+  version: "v0.99f"
+  last_upgrade_date { year: 2018 month: 7 day: 25 }
+  license_type: NOTICE
+}
