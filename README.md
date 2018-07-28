@@ -163,3 +163,8 @@ adeb prepare --build --arch amd64 --bcc --kernelsrc /path/to/kernel-source/
 ```
 Note: The --download option ignores the --arch flag. This is because we only
 provide pre-built filesystems for ARM64 at the moment.
+
+Common Trouble shooting
+-----------------
+1. Installing g++ with `apt-get install g++` fails.
+A. Solution: Run `adeb shell apt-get update` after the `adeb prepare` stage.
