@@ -84,12 +84,7 @@ adeb remove
 If you have multiple devices connected, please add `-s <serialnumber>`.
 Serial numbers of all devices connected can be obtained by `adb devices`.
 
-* To update the adeb you cloned on your host, run:
-```
-adeb pull
-```
-
-To update an existing adeb clone on your host, run:
+* To update an existing adeb clone on your host, run:
 ```
 adeb git-pull
 ```
