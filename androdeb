@@ -42,6 +42,8 @@ if [ "x$ASHELL" == "x1" ]; then
 	shift || true; continue
 fi
 
+KERNEL_HEADERS_NEEDED=0
+
 case $key in
     shell) ASHELL=1;     shift || true;     ;;
     remove) REMOVE=1;     shift || true;     ;;
@@ -52,7 +54,7 @@ case $key in
     --full) FULL=1; config_full_build; shift || true; ;;
     --arch) ARCH=$2; shift || true; shift || true; ;;
     --archive) DOWNLOAD=0; TARF=$2; shift || true; shift || true; ;;
-    --bcc) source $spath/packages/bcc; shift || true;     ;;
+    --bcc) source $spath/packages/bcc; KERNEL_HEADERS_NEEDED=1; shift || true;     ;;
     --kernelsrc) KERNELSRC="$2"; shift || true;     shift || true;     ;;
     --skip-install) SKIP_INSTALL=1; shift || true; ;;
     --kernel-headers-targz) KERNELHDRS=$2; shift || true;	shift || true;	;;
@@ -71,6 +73,7 @@ done
 if [ $FULL -eq 1 ]; then
 	FNAME=androdeb-fs.tgz.zip
 	FNAME_UZ=androdeb-fs.tgz
+	KERNEL_HEADERS_NEEDED=1
 else
 	FNAME=androdeb-fs-minimal.tgz.zip
 	FNAME_UZ=androdeb-fs-minimal.tgz
@@ -204,6 +207,35 @@ function all_done_banner() {
 	c_info "All done! Run \"adeb shell\" to enter environment"
 }
 
+function check_repo_url () {
+   if [ -z $ADEB_REPO_URL ]; then
+      c_warning "Automatic download is disabled. To enable it, please set the \$ADEB_REPO_URL"
+      c_warning "environment variable as recommended in the setup instructions in the README.md"
+      do_cleanup
+      exit 0
+   fi
+}
+
+function download_headers() {
+	KERNEL_MAJOR=`$ADB shell uname -r | cut -d - -f 1 | cut -d . -f 1`
+	KERNEL_MINOR=`$ADB shell uname -r | cut -d - -f 1 | cut -d . -f 2`
+	KERNEL_VERSION="$KERNEL_MAJOR.$KERNEL_MINOR"
+	case $KERNEL_VERSION in
+		4.9) PREBUILT_HEADERS_FILE=headers-$ARCH-4.9.114.tar.gz.zip ;;
+		4.14) PREBUILT_HEADERS_FILE=headers-$ARCH-4.14.59.tar.gz.zip ;;
+		*) die 11 "Unsuported kernel version ($KERNEL_VERSION)" ;;
+	esac
+
+	check_repo_url
+
+	curl -L https://$ADEB_REPO_URL/adeb/releases/download/$VERSION/$PREBUILT_HEADERS_FILE --output $TDIR_ABS/$PREBUILT_HEADERS_FILE ||
+		   die 9 "Failed to download kernel headers"
+
+	unzip -e $TDIR_ABS/$PREBUILT_HEADERS_FILE -d $TDIR_ABS/ ||
+		   die 10 "Failed to download kernel headers. Double check the ADEB_REPO_URL value."
+	KERNELHDRS=$TDIR_ABS/`echo "$PREBUILT_HEADERS_FILE" | sed "s/.zip//"`
+}
+
 # Prepare is the last command checked
 if [ -z "$PREPARE" ]; then usage; fi
 
@@ -225,12 +257,7 @@ if [ $DOWNLOAD -eq 1 ]; then
    c_info "Downloading Androdeb from the web..."; c_info ""
 
    # Github dropped tar gz support! ##?#??#! Now we've to zip everything.
-   if [ -z $ADEB_REPO_URL ]; then
-      c_warning "Automatic download is disabled. To enable it, please set the \$ADEB_REPO_URL"
-      c_warning "environment variable as recommended in the setup instructions in the README.md"
-      do_cleanup
-      exit 0
-   fi
+   check_repo_url
 
    curl -L https://$ADEB_REPO_URL/adeb/releases/download/$VERSION/$FNAME --output $TDIR_ABS/$FNAME ||
 		   die 9 "Failed to download adeb release."
@@ -238,6 +265,11 @@ if [ $DOWNLOAD -eq 1 ]; then
    unzip -e $TDIR_ABS/$FNAME -d $TDIR_ABS/ ||
 		   die 10 "Failed to download adeb release. Double check the ADEB_REPO_URL value."
    TARF=$TDIR_ABS/$FNAME_UZ
+fi
+
+if [ ! -z "$KERNEL_HEADERS_NEEDED" ] && [ -z "$KERNELSRC" ] && [ -z "$KERNELHDRS"]; then
+	c_info "Kernel headers are needed but none were provided. Downloading pre-built headers"
+	download_headers
 fi
 
 OUT_TMP=$TDIR/debian; rm -rf $OUT_TMP; mkdir -p $OUT_TMP
