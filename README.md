@@ -51,9 +51,10 @@ cd adeb
 # Add some short cuts:
 sudo ln -s $(pwd)/adeb /usr/bin/adeb
 
-# For cached image downloads which result in a huge speed-up,
-# You could set the ADEB_REPO_URL environment variable in your
-# bashrc file.
+# Cached image downloads result in a huge speed-up. These are automatic if you
+# cloned the repository using git. However, if you downloaded the repository
+# as a zip file (or you want to host images elsewere), you could set the
+# ADEB_REPO_URL environment variable in your bashrc file.
 # Disclaimer: Google is not liable for the below URL and this
 #             is just an example.
 export ADEB_REPO_URL="github.com/joelagnel/adeb/"

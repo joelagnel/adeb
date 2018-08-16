@@ -207,13 +207,32 @@ function all_done_banner() {
 	c_info "All done! Run \"adeb shell\" to enter environment"
 }
 
+function detect_repo_url() {
+	GIT_REMOTE=`cd $spath && git branch -vv | grep "\*" | sed -e "s/.*\[//" | cut -d "/" -f 1`
+	if [ -z $GIT_REMOTE ]; then
+		c_warning "Not running from a git repository, unable to determine URL"
+		return 0
+	fi
+	ADEB_REPO_URL=`cd $spath && git remote show $GIT_REMOTE | grep "Fetch URL" | sed -e "s/.*Fetch URL://" \
+		 -e "s/.*@//"  \
+		 -e "s/https:\/\///" \
+		 -e "s/:/\//"  \
+		 -e "s/\.git$//"`"/"
+	c_info "Detected URL: $ADEB_REPO_URL"
+}
+
 function check_repo_url () {
-   if [ -z $ADEB_REPO_URL ]; then
-      c_warning "Automatic download is disabled. To enable it, please set the \$ADEB_REPO_URL"
-      c_warning "environment variable as recommended in the setup instructions in the README.md"
-      do_cleanup
-      exit 0
-   fi
+	if [ -z $ADEB_REPO_URL ]; then
+		c_info "No repository URL provided in enviromnent. Attempting to auto-detect it"
+		detect_repo_url
+	fi
+
+	if [ -z $ADEB_REPO_URL ]; then
+		c_warning "Automatic download is disabled. To enable it, please set the \$ADEB_REPO_URL"
+		c_warning "environment variable as recommended in the setup instructions in the README.md"
+		do_cleanup
+		exit 0
+	fi
 }
 
 function download_headers() {
