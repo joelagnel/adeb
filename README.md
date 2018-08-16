@@ -56,7 +56,7 @@ sudo ln -s $(pwd)/adeb /usr/bin/adeb
 # bashrc file.
 # Disclaimer: Google is not liable for the below URL and this
 #             is just an example.
-export ADEB_REPO_URL="github.com/joelagnel/"
+export ADEB_REPO_URL="github.com/joelagnel/adeb/"
 ```
 
 * Installing adeb onto your device:
