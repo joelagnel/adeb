@@ -23,5 +23,5 @@ fi
 # Override kernel version if we haven't found headers with them.
 # Needed for BCC to work on slightly mismatched kernels.
 if [ $override_vers -eq 1 ]; then
-	export LINUX_VERSION_CODE_OVERRIDE=$this_vers
+	export BCC_LINUX_VERSION_CODE=$this_vers
 fi
