@@ -2,7 +2,7 @@
 #
 # (c) Joel Fernandes <joel@joelfernandes.org>
 
-VERSION=v0.99f
+VERSION=v0.99g
 
 spath="$(dirname "$(readlink -f "$0")")"
 # spath=$( cd "$(dirname "$0")" ; pwd -P )
@@ -220,19 +220,15 @@ function download_headers() {
 	KERNEL_MAJOR=`$ADB shell uname -r | cut -d - -f 1 | cut -d . -f 1`
 	KERNEL_MINOR=`$ADB shell uname -r | cut -d - -f 1 | cut -d . -f 2`
 	KERNEL_VERSION="$KERNEL_MAJOR.$KERNEL_MINOR"
-	case $KERNEL_VERSION in
-		4.9) PREBUILT_HEADERS_FILE=headers-$ARCH-4.9.114.tar.gz.zip ;;
-		4.14) PREBUILT_HEADERS_FILE=headers-$ARCH-4.14.59.tar.gz.zip ;;
-		*) die 11 "Unsuported kernel version ($KERNEL_VERSION)" ;;
-	esac
+	PREBUILT_HEADERS_FILE=headers-$ARCH-$KERNEL_VERSION.tar.gz.zip
 
 	check_repo_url
 
-	curl -L https://$ADEB_REPO_URL/adeb/releases/download/$VERSION/$PREBUILT_HEADERS_FILE --output $TDIR_ABS/$PREBUILT_HEADERS_FILE ||
-		   die 9 "Failed to download kernel headers"
+	curl -L https://$ADEB_REPO_URL/releases/download/$VERSION/$PREBUILT_HEADERS_FILE --output $TDIR_ABS/$PREBUILT_HEADERS_FILE ||
+		   die 9 "Failed to download kernel headers. Please check your internet connection and repository URL"
 
 	unzip -e $TDIR_ABS/$PREBUILT_HEADERS_FILE -d $TDIR_ABS/ ||
-		   die 10 "Failed to download kernel headers. Double check the ADEB_REPO_URL value."
+		   die 10 "Failed to download kernel headers. Kernel $KERNEL_VERSION for $ARCH may not be supported or ADEB_REPO_URL is incorrect."
 	KERNELHDRS=$TDIR_ABS/`echo "$PREBUILT_HEADERS_FILE" | sed "s/.zip//"`
 }
 
@@ -259,7 +255,7 @@ if [ $DOWNLOAD -eq 1 ]; then
    # Github dropped tar gz support! ##?#??#! Now we've to zip everything.
    check_repo_url
 
-   curl -L https://$ADEB_REPO_URL/adeb/releases/download/$VERSION/$FNAME --output $TDIR_ABS/$FNAME ||
+   curl -L https://$ADEB_REPO_URL/releases/download/$VERSION/$FNAME --output $TDIR_ABS/$FNAME ||
 		   die 9 "Failed to download adeb release."
 
    unzip -e $TDIR_ABS/$FNAME -d $TDIR_ABS/ ||
@@ -267,7 +263,7 @@ if [ $DOWNLOAD -eq 1 ]; then
    TARF=$TDIR_ABS/$FNAME_UZ
 fi
 
-if [ ! -z "$KERNEL_HEADERS_NEEDED" ] && [ -z "$KERNELSRC" ] && [ -z "$KERNELHDRS"]; then
+if [ ! -z "$KERNEL_HEADERS_NEEDED" ] && [ -z "$KERNELSRC" ] && [ -z "$KERNELHDRS" ]; then
 	c_info "Kernel headers are needed but none were provided. Downloading pre-built headers"
 	download_headers
 fi
