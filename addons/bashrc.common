@@ -17,6 +17,16 @@ if [ -d /kernel-headers/ ]; then
 
 	if [ $this_vers -eq $h_vers ]; then
 		override_vers=0
+	else
+		this_major=$(($this_vers / (256 * 256)))
+		this_minor=$(($this_vers / 256 % 256))
+		h_major=$(($h_vers / (256 * 256)))
+		h_minor=$(($h_vers / 256 % 256))
+		if [ $this_major -ne $h_major ] || [ $this_minor -ne $h_minor ]; then
+			echo "Error: kernel version does not match installed headers ($this_major.$this_minor <> $h_major.$h_minor)"
+			echo "BCC will not work"
+			override_vers=0
+		fi
 	fi
 fi
 
