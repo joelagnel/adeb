@@ -50,7 +50,7 @@ die() {
 die_if_no_androdeb() {
 	set +e
 	$ADB shell ls /data/androdeb/debian > /dev/null 2>&1
-	if [ $? -ne 0 ]; then die 8 "Existing androdeb env not found on device. $1"; fi
+	if [ $? -ne 0 ]; then die 9 "Existing androdeb env not found on device. $1"; fi
 	set -e
 }
 
