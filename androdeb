@@ -205,12 +205,7 @@ function all_done_banner() {
 }
 
 function detect_repo_url() {
-	GIT_REMOTE=`cd $spath && git branch -vv | grep "\*" | sed -e "s/.*\[//" | cut -d "/" -f 1`
-	if [ -z $GIT_REMOTE ]; then
-		c_warning "Not running from a git repository, unable to determine URL"
-		return 0
-	fi
-	ADEB_REPO_URL=`cd $spath && git remote show $GIT_REMOTE | grep "Fetch URL" | sed -e "s/.*Fetch URL://" \
+	ADEB_REPO_URL=`cd $spath && git config -l | grep -m1 remote | grep url | sed -e "s/.*url=//" \
 		 -e "s/.*@//"  \
 		 -e "s/https:\/\///" \
 		 -e "s/:/\//"  \
