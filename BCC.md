@@ -25,6 +25,8 @@ run the following command pointing adeb to the kernel sources which will
 have it extract headers from there and push them to the device.
 ```
 adeb prepare --build --bcc --kernelsrc /path/to/kernel-source/
+OR(If you build kernel out-of-tree):
+adeb prepare --build --bcc --kbuildout /path/to/kernel-kbuild_out-dir/
 ```
 This downloads and installs a pre-built adeb filesystem containing a recent
 version of BCC onto the android device, extracts kernel headers from the source
@@ -66,6 +68,8 @@ This will make adeb clone and build the latest version of BCC for the
 target architecture. Note that this is much slower that `--download`.
 ```
 adeb prepare --build --bcc --kernelsrc /path/to/kernel-source/
+OR:
+adeb prepare --build --bcc --kbuildout /path/to/kernel-kbuild_out-dir/
 ```
 Note that the full adeb install already contains recent BCC:
 ```
@@ -81,6 +85,8 @@ processor architecture. For other architectures, use the --arch option. For
 example for x86_64 architecture, run:
 ```
 adeb prepare --arch amd64 --bcc --kernelsrc /path/to/kernel-source/
+OR:
+adeb prepare --arch amd64 --bcc --kbuildout /path/to/kernel-kbuild_out-dir/
 ```
 Note: The --download option ignores the --arch flag. This is because we only
 provide pre-built filesystems for ARM64 at the moment.

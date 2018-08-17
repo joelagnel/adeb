@@ -94,6 +94,8 @@ More advanced usage instructions
 ### Install kernel headers in addition to preparing adeb device:
 ```
 adeb prepare --kernelsrc /path/to/kernel-source
+OR(If you build kernel out-of-tree):
+aded prepare --kbuildout /path/to/kernel-kbuild_out-dir
 ```
 
 ### Update kernel headers onto an already prepared device:
@@ -101,6 +103,8 @@ adeb prepare --kernelsrc /path/to/kernel-source
 If you need to put kernel sources for an existing install, run:
 ```
 adeb prepare --kernelsrc /path/to/kernel-source --skip-install
+OR:
+adeb prepare --kbuildout /path/to/kernel-kbuild_out-dir --skip-install
 ```
 Note: The kernel sources should have been built (atleast build should have started).
 
@@ -120,13 +124,17 @@ adeb prepare --full --build
 ### Add kernel headers to device in addition to building locally:
 ```
 adeb prepare --build --kernelsrc /path/to/kernel-source/
+OR:
+adeb prepare --build --kbuildout /path/to/kernel-kbuild_out-dir
 ```
 
 ### Build/install a base image with BCC:
 ```
 adeb prepare --build --bcc --kernelsrc /path/to/kernel-source/
+OR:
+adeb prepare --build --bcc --kbuildout /path/to/kernel-kbuild_out-dir
 ```
-Note: BCC is built from source. Also `--kernelsrc` is recommended for tools to
+Note: BCC is built from source. Also `--kernelsrc` or `--kbuildout` is recommended for tools to
 function unless device has them already.
 
 ### Extract the FS from the device, after its prepared:
@@ -155,6 +163,8 @@ processor architecture. For other architectures, use the --arch option. For
 example for x86_64 architecture, run:
 ```
 adeb prepare --build --arch amd64 --bcc --kernelsrc /path/to/kernel-source/
+OR:
+adeb prepare --build --arch amd64 --bcc --kbuildout /path/to/kernel-kbuild_out-dir/
 ```
 Note: The --download option ignores the --arch flag. This is because we only
 provide pre-built filesystems for ARM64 at the moment.
