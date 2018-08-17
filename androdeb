@@ -54,6 +54,7 @@ case $key in
     --archive) DOWNLOAD=0; TARF=$2; shift || true; shift || true; ;;
     --bcc) source $spath/packages/bcc; shift || true;     ;;
     --kernelsrc) KERNELSRC="$2"; shift || true;     shift || true;     ;;
+    --kbuildout) KBUILDOUT="$2"; shift || true;     shift || true;     ;;
     --skip-install) SKIP_INSTALL=1; shift || true; ;;
     --kernel-headers-targz) KERNELHDRS=$2; shift || true;	shift || true;	;;
     --tempdir) TDIR="$2"; shift || true;     shift || true;     ;;
@@ -65,6 +66,12 @@ case $key in
     *) c_error "Unknown option ($1)"; usage; ;;
 esac
 done
+
+if [ ! -z "$KERNELSRC" -a ! -z "KBUILDOUT" ];
+then
+   c_warning "--kernelsrc option will set --kbuildout option ineffective"
+   unset KBUILDOUT
+fi
 
 [ -z $ASHELL ] && box_out "adeb: $VERSION"
 
@@ -211,7 +218,9 @@ if [ ! -z "$TARF" ] && [ ! -f $TARF ] && [ -z "$DOWNLOAD" ]; then die 5 "archive
 
 if [ ! -z "$KERNELSRC" ] && [ ! -d $KERNELSRC ]; then die 6 "Kernel source directory provided doesn't exist"; fi
 
-if [ ! -z "$KERNELHDRS" ] && [ ! -f $KERNELHDRS ]; then die 7 "Kernel headers tar.gz doesn't exist"; fi
+if [ ! -z "$KBUILDOUT" ] && [ ! -d $KBUILDOUT ]; then die 7 "Kernel build out-of-tree directory doesn't exist"; fi
+
+if [ ! -z "$KERNELHDRS" ] && [ ! -f $KERNELHDRS ]; then die 8 "Kernel headers tar.gz doesn't exist"; fi
 
 print_prepare_banner
 
@@ -233,10 +242,10 @@ if [ $DOWNLOAD -eq 1 ]; then
    fi
 
    curl -L https://$ADEB_REPO_URL/adeb/releases/download/$VERSION/$FNAME --output $TDIR_ABS/$FNAME ||
-		   die 9 "Failed to download adeb release."
+		   die 10 "Failed to download adeb release."
 
    unzip -e $TDIR_ABS/$FNAME -d $TDIR_ABS/ ||
-		   die 10 "Failed to download adeb release. Double check the ADEB_REPO_URL value."
+		   die 11 "Failed to download adeb release. Double check the ADEB_REPO_URL value."
    TARF=$TDIR_ABS/$FNAME_UZ
 fi
 
@@ -258,7 +267,15 @@ fi
 if [ ! -z "$KERNELSRC" ]; then
 	c_info "Building and updating kernel headers from kernel source dir ($KERNELSRC)"
 	$spath/bcc/build-kheaders-targz.sh ${KERNELSRC} $TDIR_ABS/kh.tgz > /dev/null
+fi
 
+# Extract kernel headers from kernel build out-of-tree directory
+if [ ! -z "$KBUILDOUT" ]; then
+	c_info "Extract kernel headers from kernel build out-of-tree directory ($KBUILDOUT)"
+	$spath/bcc/buildout-kheaders-targz.sh ${KBUILDOUT} $TDIR_ABS/kh.tgz > /dev/null
+fi
+
+if [ ! -z "$KERNELSRC" -o ! -z "$KBUILDOUT" ]; then
 	# Is header update the only thing left to do?
 	if [[ ! -z "$SKIP_INSTALL" ]]; then
 		c_info "Skipping install"
@@ -267,6 +284,7 @@ if [ ! -z "$KERNELSRC" ]; then
 	mkdir $OUT_TMP/kernel-headers
 	tar -xvf $TDIR_ABS/kh.tgz -C $OUT_TMP/kernel-headers/ > /dev/null
 fi
+
 
 # Build FS from existing tar, very simple.
 if [ ! -z "$TARF" ]; then
