@@ -63,11 +63,6 @@ echo "nameserver 4.2.2.2" > $OUT_TMP/etc/resolv.conf
 if [ $INSTALL_BCC -eq 1 ]; then
 	git clone https://github.com/iovisor/bcc.git $TDIR/debian/bcc-master
 	cp $spath/bcc/build-bcc.sh $TDIR/debian/bcc-master/;
-
-	pushd $TDIR/debian/bcc-master
-	patch -p1 < $spath/bcc/misc/0001-clang-Allow-user-to-override-kernel-version.patch
-	patch -p1 < $spath/bcc/misc/0001-DONOT-MERGE-Remove-version-override-warnings.patch
-	popd
 fi
 
 # Should be really do this?
