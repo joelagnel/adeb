@@ -42,8 +42,6 @@ if [ "x$ASHELL" == "x1" ]; then
 	shift || true; continue
 fi
 
-KERNEL_HEADERS_NEEDED=0
-
 case $key in
     shell) ASHELL=1;     shift || true;     ;;
     remove) REMOVE=1;     shift || true;     ;;
@@ -54,7 +52,7 @@ case $key in
     --full) FULL=1; config_full_build; shift || true; ;;
     --arch) ARCH=$2; shift || true; shift || true; ;;
     --archive) DOWNLOAD=0; TARF=$2; shift || true; shift || true; ;;
-    --bcc) source $spath/packages/bcc; KERNEL_HEADERS_NEEDED=1; shift || true;     ;;
+    --bcc) FULL=1; source $spath/packages/bcc; shift || true;     ;;
     --kernelsrc) KERNELSRC="$2"; shift || true;     shift || true;     ;;
     --skip-install) SKIP_INSTALL=1; shift || true; ;;
     --kernel-headers-targz) KERNELHDRS=$2; shift || true;	shift || true;	;;
@@ -73,7 +71,6 @@ done
 if [ $FULL -eq 1 ]; then
 	FNAME=androdeb-fs.tgz.zip
 	FNAME_UZ=androdeb-fs.tgz
-	KERNEL_HEADERS_NEEDED=1
 else
 	FNAME=androdeb-fs-minimal.tgz.zip
 	FNAME_UZ=androdeb-fs-minimal.tgz
@@ -282,7 +279,7 @@ if [ $DOWNLOAD -eq 1 ]; then
    TARF=$TDIR_ABS/$FNAME_UZ
 fi
 
-if [ ! -z "$KERNEL_HEADERS_NEEDED" ] && [ -z "$KERNELSRC" ] && [ -z "$KERNELHDRS" ]; then
+if [ ! -z "$FULL" ] && [ -z "$KERNELSRC" ] && [ -z "$KERNELHDRS" ]; then
 	c_info "Kernel headers are needed but none were provided. Downloading pre-built headers"
 	download_headers
 fi
