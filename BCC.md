@@ -19,18 +19,24 @@ building BCC on device, and other setup. Take a look a quick look at [adeb
 README](https://github.com/joelagnel/adeb/blob/master/README.md) so that
 you're familiar with what it is.
 
-For setting up BCC on your Android device, you need the target device's kernel
-source and the sources should be built atleast once in-tree. Once it is built,
-run the following command pointing adeb to the kernel sources which will
-have it extract headers from there and push them to the device.
+To download a prebuilt filesystem with BCC already built/installed for an ARM64
+device, you can just run:
 ```
-adeb prepare --build --bcc --kernelsrc /path/to/kernel-source/
+adeb prepare --full
 ```
-This downloads and installs a pre-built adeb filesystem containing a recent
-version of BCC onto the android device, extracts kernel headers from the source
-tree pointed to and does other setup. Note that `--download` option will work
-only if the target architecture is ARM64. For other architectures, see the
-[Other Architectures
+
+This downloads the FS and also downloads prebuilt kernel headers after
+detecting your device's kernel version. Running BCC this way may cause a warning
+at startup since the headers may not be an *exact* match for your kernel's
+sublevel (only version and patchlevel are matched), however it works well in
+our testing and could be used, as long as you can tolerate the warning.
+
+If you would like to setup your own kernel headers and prevent the warning,
+you can point adeb to the kernel sources which will extract headers from there:
+```
+adeb prepare --full --kernelsrc /path/to/kernel-source/
+```
+For targets other than ARM64, see the [Other Architectures
 section](https://github.com/joelagnel/adeb/blob/master/BCC.md#other-architectures-other-than-arm64)
 
 Now to run BCC, just start an adeb shell: `adeb shell`. This uses adb
@@ -60,19 +66,13 @@ CONFIG_PREEMPTIRQ_EVENTS=y
 
 Build BCC during adeb install (Optional)
 --------------------------------------------
-If you would like the latest BCC installation on your Android device, we
-recommend dropping the `--download` option from the adeb command above.
-This will make adeb clone and build the latest version of BCC for the
-target architecture. Note that this is much slower that `--download`.
+If you would like the latest upstream BCC built and installed on your Android
+device, you can run:
 ```
 adeb prepare --build --bcc --kernelsrc /path/to/kernel-source/
 ```
-Note that the full adeb install already contains recent BCC:
-```
-adeb prepare --full
-```
-This downloads and installs a prebuilt FS and is faster than building locally
-using `--build`.
+NOTE: This is a slow process and can take a long time. Since it not only builds
+BCC but also installs all non-BCC debian packages onto the filesystem and configures them.
 
 Other Architectures (other than ARM64)
 -----------------------
@@ -80,10 +80,12 @@ By default adeb assumes the target Android device is based on ARM64
 processor architecture. For other architectures, use the --arch option. For
 example for x86_64 architecture, run:
 ```
-adeb prepare --arch amd64 --bcc --kernelsrc /path/to/kernel-source/
+adeb prepare --arch amd64 --build --bcc --kernelsrc /path/to/kernel-source/
 ```
 Note: The --download option ignores the --arch flag. This is because we only
 provide pre-built filesystems for ARM64 at the moment.
+Note: If you pass --arch, you have to pass --build, because prebuilt
+filesystems are not available for non-arm64 devices.
 
 Common Issues
 -------------
