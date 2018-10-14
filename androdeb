@@ -60,7 +60,7 @@ case $key in
     --build) DOWNLOAD=0;  shift || true;     ;;
     --buildtar) BTAR=1; DOWNLOAD=0; TARDIR="$2"; shift || true;     shift || true;     ;;
     --device|-s) ADB="$ADB -s $2"; shift || true; shift || true; ;;
-    --build-image) BI=1; BUILD_IMAGEF=$2; SKIP_DEVICE=1; shift || true; shift || true; ;;
+    --build-image) BI=1; BUILD_IMAGEF=$2; SKIP_DEVICE=1; DOWNLOAD=0; shift || true; shift || true; ;;
     --debug) set -x; shift || true; ;;
     *) c_error "Unknown option ($1)"; usage; ;;
 esac
@@ -274,7 +274,7 @@ if [ $DOWNLOAD -eq 1 ]; then
    TARF=$TDIR_ABS/$FNAME_UZ
 fi
 
-if [ ! -z "$FULL" ] && [ -z "$KERNELSRC" ] && [ -z "$KERNELHDRS" ]; then
+if [ ! -z "$FULL" ] && [ -z "$KERNELSRC" ] && [ -z "$KERNELHDRS" ] && [ -z "$BI" ]; then
 	c_info "Kernel headers are needed but none were provided. Downloading pre-built headers"
 	download_headers
 fi
