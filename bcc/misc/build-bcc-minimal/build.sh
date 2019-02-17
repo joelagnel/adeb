@@ -24,7 +24,7 @@ rm -rf $BLD_DIR && mkdir -p $BLD_DIR
 # Build a chroot for the build system to build BCC into
 sudo qemu-debootstrap \
     --arch arm64 \
-    --include=procps,git,clang-6.0,cmake,llvm-6.0-dev,libclang-6.0-dev,libelf-dev,libfl-dev,libunwind-dev,libdw-dev,git,libtool,autoconf,make,cmake,iperf,arping,ethtool,flex,bison,python,clang-6.0,python-netaddr,python-pyroute2 \
+    --include=procps,git,clang-7,cmake,llvm-7-dev,libclang-7-dev,libelf-dev,libfl-dev,libunwind-dev,libdw-dev,git,libtool,autoconf,make,cmake,iperf,arping,ethtool,flex,bison,python,clang-7,python-netaddr,python-pyroute2 \
     --variant=minbase $DIST $BLD_DIR http://ftp.us.debian.org/debian
 
 pushd $BLD_DIR
