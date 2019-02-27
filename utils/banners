@@ -55,6 +55,12 @@ usage() {
 	c_info "	--device	Serial number of adb device."
 	c_info "	      -s	Serial number of adb device."
 	c_info ""
+	c_info "	--ssh		Use ssh instead of adb to talk to the device"
+	c_info "			The uri of the device is expected to be passed with this option"
+	c_info "			ie: user@ip_address"
+	c_info ""
+	c_info "	--sshpass	The ssh password to use"
+	c_info ""
 	c_info "	--debug		Debug all execution."
 	exit 1
 }

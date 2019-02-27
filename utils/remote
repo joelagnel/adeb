@@ -1,0 +1,139 @@
+#!/bin/bash -x
+# Utilities to talk to the device more easily using adb or ssh
+
+function validate_remote() {
+	if [ "$REMOTE" == "adb" ]; then
+
+		if [ -z "$ADB" ]; then
+			c_error "ADB is not defined"
+			exit -1
+		fi
+	elif [ "$REMOTE" == "ssh" ]; then
+
+		if [ -z "$SSH_URI" ]; then
+			c_error "SSH_URI is not defined"
+			exit -1
+		fi
+	else
+		c_error "Unknown remote: $REMOTE"
+		exit -1
+	fi
+}
+
+#
+# Adb Commands
+#
+function remote_adb_shell() {
+	$ADB shell "$@"
+}
+
+function remote_adb_pull() {
+	if [ $1 == "-a" ]; then
+		PRESERVE="-a"
+		c_info "Preserving filestamps and mode"
+		shift || true
+	fi
+	file_count=`count_sources $@`
+	i=0
+	while [ $i -lt $file_count ]; do
+		files["$i"]=/data/androdeb/debian/$1
+		shift || true
+		i=$((i + 1))
+	done
+	$ADB pull $PRESERVE "${files[@]}" "$@"
+}
+
+function remote_adb_push() {
+	file_count=`count_sources $@`
+	i=0
+	while [ $i -lt $file_count ]; do
+		files["$i"]=$1
+		shift || true
+		i=$((i + 1))
+	done
+	dest=/data/androdeb/debian/$1
+	$ADB push $sync "${files[@]}" $dest
+}
+
+function remote_adb_copy() {
+	$ADB push "$@"
+}
+
+function remote_adb_root() {
+	do_adb_root "$ADB"
+}
+
+#
+# Shell Commands
+#
+function remote_ssh_shell() {
+	$SSHPASS ssh $SSH_URI "$@"
+}
+
+function remote_ssh_pull() {
+	src="${@:1:$#-1}"
+	DEST="${@:$#}"
+
+	for file in $src
+	do
+		SRC="$SRC /data/androdeb/debian/$file"
+	done
+	$SSHPASS scp -r $SSH_URI:"$SRC" $DEST
+}
+
+function remote_ssh_push() {
+	SRC="${@:1:$#-1}"
+	DEST="/data/androdeb/debian/${@:$#}"
+	$SSHPASS scp -r $SRC $SSH_URI:$DEST
+}
+
+function remote_ssh_copy() {
+	SRC="${@:1:$#-1}"
+	DEST="${@:$#}"
+	$SSHPASS scp -r $SRC $SSH_URI:$DEST
+}
+
+function remote_ssh_root() {
+	# We always assume the ssh user has root access
+	true
+}
+
+#
+# Abstraction layer
+#
+function remote_shell() {
+	# Sanity everything we need is defined correctly
+	validate_remote
+
+	remote_${REMOTE}_shell "$@"
+}
+
+function remote_pull() {
+	# Sanity everything we need is defined correctly
+	validate_remote
+
+	remote_${REMOTE}_pull "$@"
+}
+
+function remote_push() {
+	# Sanity everything we need is defined correctly
+	validate_remote
+
+	remote_${REMOTE}_push "$@"
+}
+
+# Like push but for copying files outsisde deb-fs
+# ie: full paths are expected here
+function remote_copy() {
+	# Sanity everything we need is defined correctly
+	validate_remote
+#
+	remote_${REMOTE}_copy "$@"
+}
+
+function remote_root() {
+	# Sanity everything we need is defined correctly
+	validate_remote
+
+	remote_${REMOTE}_root
+}
