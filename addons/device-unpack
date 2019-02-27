@@ -1,3 +1,4 @@
+#!/bin/sh
 #!/system/bin/sh
 
 set -e
@@ -10,7 +11,7 @@ set -e
 spath=$( cd "$(dirname "$0")" ; pwd -P )
 
 if [ ! -f /data/androdeb/deb.tar.gz ]; then
-	echo "Debian rootfs tar doesn't existing at /data/deb.tar.gz"
+	echo "Debian rootfs tar doesn't existing at /data/androdeb/deb.tar.gz"
 	echo "Run androdeb with device connected first"
 	exit 1
 fi
@@ -22,7 +23,8 @@ if [ -d /data/androdeb/debian ]; then
 fi
 
 
-tar -zxf /data/androdeb/deb.tar.gz -C /data/androdeb/ || die 2 "Couldn't unpack due to tar -x errors"
-rm /data/androdeb/deb.tar.gz
+gunzip /data/androdeb/deb.tar.gz
+tar -xf /data/androdeb/deb.tar -C /data/androdeb/
+rm /data/androdeb/deb.tar
 
 echo "Unpack of rootfs successful!"

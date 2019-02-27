@@ -1,3 +1,4 @@
+#!/bin/sh
 #!/system/bin/sh
 spath=$( cd "$(dirname "$0")" ; pwd -P )
 cd $spath

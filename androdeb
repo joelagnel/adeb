@@ -165,8 +165,9 @@ function push_unpack_headers() {
 	remote_shell rm -rf /data/androdeb/debian/kernel-headers/
 	remote_shell mkdir  /data/androdeb/debian/kernel-headers/
 	run_quiet remote_copy $TDIR_ABS/kh.tgz /data/androdeb/
-	remote_shell tar -xvf /data/androdeb/kh.tgz -C /data/androdeb/debian/kernel-headers/ > /dev/null
-	remote_shell rm /data/androdeb/kh.tgz
+	remote_shell gunzip /data/androdeb/kh.tgz > /dev/null
+	remote_shell tar -xvf /data/androdeb/kh.tar -C /data/androdeb/debian/kernel-headers/ > /dev/null
+	remote_shell rm /data/androdeb/kh.tar
 }
 
 function push_unpack_tarred_headers() {
