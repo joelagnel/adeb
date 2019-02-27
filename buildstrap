@@ -62,10 +62,11 @@ echo "nameserver 4.2.2.2" > $OUT_TMP/etc/resolv.conf
 # Clone BCC if needed
 if [ $INSTALL_BCC -eq 1 ]; then
 	git clone https://github.com/iovisor/bcc.git $TDIR/debian/bcc-master
-	cp $spath/bcc/build-bcc.sh $TDIR/debian/bcc-master/;
+	cp $spath/bcc/build-bcc.sh $TDIR/debian/bcc-master/
+	chroot $OUT_TMP /bcc-master/build-bcc.sh
 fi
 
-# Should be really do this?
+# Should we really do this?
 chmod -R 0777 $TDIR/
 
 [ $SKIP_DEVICE -eq 0 ] || exit 0
