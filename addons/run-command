@@ -3,7 +3,7 @@
 spath=$( cd "$(dirname "$0")" ; pwd -P )
 cd $spath
 
-source run.common
+source $spath/run.common
 
 # Directly execute a command within the chroot of an Android device
 CMD="$*"

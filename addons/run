@@ -3,6 +3,6 @@
 spath=$( cd "$(dirname "$0")" ; pwd -P )
 cd $spath
 
-source run.common
+source $spath/run.common
 
 chroot debian/ /bin/bash
