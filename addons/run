@@ -5,4 +5,4 @@ cd $spath
 
 source $spath/run.common
 
-chroot debian/ /bin/bash
+chroot debian/ /bin/bash --rcfile '.bashrc'
