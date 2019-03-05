@@ -1,5 +1,4 @@
 #!/bin/sh
-#!/system/bin/sh
 
 set -e
 
