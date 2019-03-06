@@ -36,6 +36,9 @@ this is a build in a userdebug configuration. Device should have atleast 2 GB
 free space in the data partition. If you would like to use other architectures,
 see the [Other Architectures](https://github.com/joelagnel/adeb/blob/master/README.md#how-to-use-adeb-for-other-architectures-other-than-arm64) section.
 
+You can also use ssh to run on non-android systems. The system must still be
+rooted and has 2 GB of free space.
+
 Host:
 A machine running recent Ubuntu or Debian, with 4GB of memory and 4GB free space.
 Host needs debootstrap and qemu-debootstrap packages.
@@ -89,6 +92,19 @@ Serial numbers of all devices connected can be obtained by `adb devices`.
 ```
 adeb git-pull
 ```
+
+* To use ssh instead of adb to communicate with the target
+```
+adeb --ssh <uri> --sshpass <pass> <cmd>
+```
+If you use keys to authenticate then you can omit --sshpass option.
+If you don't use keys you can still omit --sshpass option but you'd need to
+keep an eye to enter the password at the right moments when prompted or it'll
+timeout.
+
+The first time you connect to the target make sure to ssh outside of adeb first
+to add it to your known_hosts.
+
 
 More advanced usage instructions
 --------------------------------
