@@ -1,7 +1,8 @@
+#!/bin/sh
 #!/system/bin/sh
 spath=$( cd "$(dirname "$0")" ; pwd -P )
 cd $spath
 
-source run.common
+source $spath/run.common
 
-chroot debian/ /bin/bash
+chroot debian/ /bin/bash --rcfile '.bashrc'

@@ -9,10 +9,12 @@ spath="$(dirname "$(readlink -f "$0")")"
 curdir=$( pwd -P )
 source $spath/utils/support
 source $spath/utils/banners
+source $spath/utils/remote
 
 # Set default vars
 DISTRO=buster; ARCH=arm64
 ADB="adb"
+REMOTE="adb"
 FULL=0				# Default to a minimal install
 DOWNLOAD=1			# Default to downloading from web
 SKIP_DEVICE=0			# Skip device preparation
@@ -60,6 +62,8 @@ case $key in
     --build) DOWNLOAD=0;  shift || true;     ;;
     --buildtar) BTAR=1; DOWNLOAD=0; TARDIR="$2"; shift || true;     shift || true;     ;;
     --device|-s) ADB="$ADB -s $2"; shift || true; shift || true; ;;
+    --ssh) REMOTE="ssh"; SSH_URI="$2"; shift || true; shift || true; ;;
+    --sshpass) SSHPASS="sshpass -p$2"; shift || true; shift || true; ;;
     --build-image) BI=1; BUILD_IMAGEF=$2; SKIP_DEVICE=1; DOWNLOAD=0; shift || true; shift || true; ;;
     --debug) set -x; shift || true; ;;
     *) c_error "Unknown option ($1)"; usage; ;;
@@ -89,32 +93,12 @@ if [ ! -z "$GIT_PULL" ]; then
 fi
 
 if [ ! -z "$PULL" ]; then
-	if [ $1 == "-a" ]; then
-		PRESERVE="-a"
-		c_info "Preserving filestamps and mode"
-		shift || true
-	fi
-	file_count=`count_sources $@`
-	i=0
-	while [ $i -lt $file_count ]; do
-		files["$i"]=/data/androdeb/debian/$1
-		shift || true
-		i=$((i + 1))
-	done
-	$ADB pull $PRESERVE "${files[@]}" "$@"
+	remote_pull "$@"
 	exit 0
 fi
 
 if [ ! -z "$PUSH" ]; then
-	file_count=`count_sources $@`
-	i=0
-	while [ $i -lt $file_count ]; do
-		files["$i"]=$1
-		shift || true
-		i=$((i + 1))
-	done
-	dest=/data/androdeb/debian/$1
-	$ADB push $sync "${files[@]}" $dest
+	remote_push "$@"
 	exit 0
 fi
 
@@ -123,7 +107,7 @@ if [[ ! -z ${TARDIR+x} ]] && [[ ! -d $TARDIR ]]; then die 7 "Tar dir specified d
 if [ -z $BI ]; then
 	[ -z $ASHELL ] && c_info "Looking for device.."
 	set +e
-	do_adb_root "$ADB"
+	remote_root
 
 	if [ $? -ne 0 ]; then
 		c_error "adb root failed, make sure:"
@@ -141,14 +125,14 @@ fi
 
 if [ ! -z "$REMOVE" ]; then
 	die_if_no_androdeb "Nothing to remove."
-	$ADB shell /data/androdeb/device-umount-all || true;
-	$ADB shell rm -rf /data/androdeb; exit 0; fi
+	remote_shell /data/androdeb/device-umount-all || true;
+	remote_shell rm -rf /data/androdeb; exit 0; fi
 
 ##########################################################
 #  SHELL
 ##########################################################
 if [ ! -z ${ASHELL+x} ]; then
-	set +e; $ADB shell ls /data/androdeb/debian/.bashrc > /dev/null 2>&1
+	set +e; remote_shell ls /data/androdeb/debian/.bashrc > /dev/null 2>&1
 	if [ $? -ne 0 ]; then
 	   die 2 "Device doesn't have an androdeb environment, run \"./androdeb prepare\" first";
 	fi; set -e
@@ -158,9 +142,9 @@ if [ ! -z ${ASHELL+x} ]; then
 		# Outer quote is so that androdeb's bash passes the SHELL_ARGS as a single
 		# argument to $ADB shell. Inner quotes is so that run-command can receive all
 		# the args even though they may be separated by spaces. \m/
-		$ADB shell -t /data/androdeb/run-command "\"$SHELL_ARGS\""
+		remote_shell -t /data/androdeb/run-command "\"$SHELL_ARGS\""
 	else
-		$ADB shell -t /data/androdeb/run
+		remote_shell -t /data/androdeb/run
 	fi
 
 	exit 0
@@ -178,26 +162,27 @@ function push_unpack_headers() {
 	die_if_no_androdeb "Couldn't update headers."
 
 	c_info "Storing kernel headers into androdeb /kernel-headers/"
-	$ADB shell rm -rf /data/androdeb/debian/kernel-headers/
-	$ADB shell mkdir  /data/androdeb/debian/kernel-headers/
-	run_quiet $ADB push $TDIR_ABS/kh.tgz /data/androdeb/
-	$ADB shell tar -xvf /data/androdeb/kh.tgz -C /data/androdeb/debian/kernel-headers/ > /dev/null
-	$ADB shell rm /data/androdeb/kh.tgz
+	remote_shell rm -rf /data/androdeb/debian/kernel-headers/
+	remote_shell mkdir  /data/androdeb/debian/kernel-headers/
+	tmpdir=$(mktemp -d)
+	tar -xvf $TDIR_ABS/kh.tgz -C $tmpdir > /dev/null
+	run_quiet remote_copy $tmpdir/* /data/androdeb/debian/kernel-headers/ > /dev/null
+	rm -rf $tmpdir
 }
 
 function push_unpack_tarred_headers() {
 	die_if_no_androdeb "Couldn't update headers."
 
-	$ADB shell rm -rf /data/androdeb/debian/kernel-headers/
-	$ADB shell mkdir  /data/androdeb/debian/kernel-headers/
+	remote_shell rm -rf /data/androdeb/debian/kernel-headers/
+	remote_shell mkdir  /data/androdeb/debian/kernel-headers/
 
 	c_info "Pushing headers tar onto device"
-	run_quiet $ADB push $1 /data/androdeb/
+	run_quiet remote_copy $1 /data/androdeb/
 
 	c_info "Storing kernel headers into androdeb root directory"
-	$ADB shell tar -xvf /data/androdeb/$(basename $1) -C /data/androdeb/debian/ > /dev/null
+	remote_shell tar -xvf /data/androdeb/$(basename $1) -C /data/androdeb/debian/ > /dev/null
 
-	$ADB shell rm /data/androdeb/$(basename $1)
+	remote_shell rm /data/androdeb/$(basename $1)
 }
 
 function all_done_banner() {
@@ -228,8 +213,8 @@ function check_repo_url () {
 }
 
 function download_headers() {
-	KERNEL_MAJOR=`$ADB shell uname -r | cut -d - -f 1 | cut -d . -f 1`
-	KERNEL_MINOR=`$ADB shell uname -r | cut -d - -f 1 | cut -d . -f 2`
+	KERNEL_MAJOR=`remote_shell uname -r | cut -d - -f 1 | cut -d . -f 1`
+	KERNEL_MINOR=`remote_shell uname -r | cut -d - -f 1 | cut -d . -f 2`
 	KERNEL_VERSION="$KERNEL_MAJOR.$KERNEL_MINOR"
 	PREBUILT_HEADERS_FILE=headers-$ARCH-$KERNEL_VERSION.tar.gz.zip
 
@@ -310,16 +295,16 @@ fi
 # Build FS from existing tar, very simple.
 if [ ! -z "$TARF" ]; then
 	c_info "Using archive at $TARF for filesystem preparation"
-	$ADB shell mkdir -p /data/androdeb/
+	remote_shell mkdir -p /data/androdeb/
 
 	c_info "Pushing filesystem to device.."
-	run_quiet $ADB push $TARF /data/androdeb/deb.tar.gz
+	run_quiet remote_copy $TARF /data/androdeb/deb.tar.gz
 
 	c_info "Pushing addons to device.."
-	run_quiet $ADB push $spath/addons/* /data/androdeb/
+	run_quiet remote_copy $spath/addons/* /data/androdeb/
 
 	c_info "Unpacking filesystem in device.."
-	run_quiet $ADB shell /data/androdeb/device-unpack
+	run_quiet remote_shell /data/androdeb/device-unpack
 
 	if [ ! -z "$KERNELHDRS" ]; then push_unpack_tarred_headers $KERNELHDRS; fi
 	if [ ! -z "$KERNELSRC" ]; then push_unpack_headers; fi
@@ -356,10 +341,10 @@ if [ $SKIP_DEVICE -eq 1 ]; then
 fi
 
 # Push tar to device and start unpack
-$ADB shell mkdir -p /data/androdeb/
-$ADB push $TDIR/deb.tar.gz /data/androdeb/
-$ADB push $spath/addons/* /data/androdeb/
-$ADB shell /data/androdeb/device-unpack
+remote_shell mkdir -p /data/androdeb/
+remote_copy $TDIR/deb.tar.gz /data/androdeb/
+remote_copy $spath/addons/* /data/androdeb/
+remote_shell /data/androdeb/device-unpack
 
 # Extract a tar of the built, compiled and installed androdeb env
 if [[ ! -z ${TARDIR+x} ]]; then
@@ -368,9 +353,9 @@ if [[ ! -z ${TARDIR+x} ]]; then
 	if [ $INSTALL_BCC -eq 0 ]; then
 		mv $TDIR/deb.tar.gz $FNAME_UZ
 	else
-		$ADB shell /data/androdeb/build-debian-tar
-		$ADB pull /data/androdeb/androdeb-fs.tgz $FNAME_UZ
-		$ADB shell rm /data/androdeb/androdeb-fs.tgz;
+		remote_shell /data/androdeb/build-debian-tar
+		remote_pull /data/androdeb/androdeb-fs.tgz $FNAME_UZ
+		remote_shell rm /data/androdeb/androdeb-fs.tgz;
 	fi
 	zip -r $FNAME $FNAME_UZ
 	popd
