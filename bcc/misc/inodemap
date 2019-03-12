@@ -1,0 +1,65 @@
+#!/usr/bin/python
+# Map inode numbers to names.
+# Corresponding kernel patch is in:
+# 0001-trace-file-path-inode-number.patch
+
+from __future__ import print_function
+from bcc import BPF, USDT, DEBUG_PREPROCESSOR
+from time import sleep, strftime
+import argparse
+import re
+import signal
+import sys
+import traceback
+from subprocess import call
+
+bpf_text = """
+
+#define MAX_PATH_LENGTH 32
+
+struct val_t {
+    char path[MAX_PATH_LENGTH];
+};
+
+BPF_HASH(inode_map, u64, struct val_t);
+
+/*
+struct namei_args {
+    unsigned long long ignore;
+    int inode_no;
+    char path[MAX_PATH_LENGTH];
+};
+*/
+
+TRACEPOINT_PROBE(namei, namei_inode_path) {
+    u64 inode_no = args->inode_no;
+    struct val_t val = {};
+
+    /* bug, we may be over reading */
+    bpf_probe_read(&val.path, sizeof(val.path), args->path);
+
+    inode_map.update(&inode_no, &val);
+    return 0;
+}
+"""
+
+b = BPF(text=bpf_text, debug=DEBUG_PREPROCESSOR)
+
+exiting = 0
+
+inode_map = b.get_table("inode_map")
+while 1:
+	try:
+		sleep(1)
+	except KeyboardInterrupt:
+		exiting = 1
+        call("clear")
+
+	for k, v in inode_map.items():
+		print("%-6d %s" % (k.value, v.path.decode('utf-8', 'replace')))
+
+	inode_map.clear()
+
+	if exiting:
+		print("Detaching...")
+		exit()

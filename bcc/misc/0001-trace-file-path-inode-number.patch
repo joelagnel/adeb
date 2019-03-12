@@ -1,0 +1,119 @@
+From 4484b9f102e4d226df06e8e12f860bd54422e429 Mon Sep 17 00:00:00 2001
+From: "Joel Fernandes (Google)" <joel@joelfernandes.org>
+Date: Mon, 11 Mar 2019 21:20:41 -0400
+Subject: [PATCH] trace file-path -> inode number
+
+Change-Id: I464821bb5696f0d51259d9c1a31eb62e6c1b76da
+Signed-off-by: Joel Fernandes (Google) <joel@joelfernandes.org>
+---
+ fs/namei.c                   | 36 +++++++++++++++++++++++++++++++++---
+ include/trace/events/namei.h | 31 +++++++++++++++++++++++++++++++
+ 2 files changed, 64 insertions(+), 3 deletions(-)
+ create mode 100644 include/trace/events/namei.h
+
+diff --git a/fs/namei.c b/fs/namei.c
+index d33064a40420..e0d6f4441357 100644
+--- a/fs/namei.c
++++ b/fs/namei.c
+@@ -15,6 +15,9 @@
+ /* [Feb-Apr 2000, AV] Rewrite to the new namespace architecture.
+  */
+ 
++#define CREATE_TRACE_POINTS
++#include <trace/events/namei.h>
++
+ #include <linux/init.h>
+ #include <linux/export.h>
+ #include <linux/kernel.h>
+@@ -801,6 +804,33 @@ static inline int d_revalidate(struct dentry *dentry, unsigned int flags)
+ 		return 1;
+ }
+ 
++static int success_walk(struct nameidata *nd)
++{
++	struct path *pt = &nd->path;
++	struct inode *i = nd->inode;
++	char buf[200];
++	int n = 200;
++	char *p;
++
++	p = d_path(pt, buf, n);
++
++	if (!IS_ERR(p)) {
++		char *end = mangle_path(buf, p, "\n");
++		if (end) {
++			buf[end - buf] = 0;
++		} else {
++			buf[n-1] = 0;
++		}
++	} else {
++		buf[0] = 0;
++	}
++
++	buf[30] = 0;
++
++	trace_namei_inode_path(i->i_ino, buf);
++	return 0;
++}
++
+ /**
+  * complete_walk - successful completion of path walk
+  * @nd:  pointer nameidata
+@@ -824,14 +854,14 @@ static int complete_walk(struct nameidata *nd)
+ 	}
+ 
+ 	if (likely(!(nd->flags & LOOKUP_JUMPED)))
+-		return 0;
++		return success_walk(nd);
+ 
+ 	if (likely(!(dentry->d_flags & DCACHE_OP_WEAK_REVALIDATE)))
+-		return 0;
++		return success_walk(nd);
+ 
+ 	status = dentry->d_op->d_weak_revalidate(dentry, nd->flags);
+ 	if (status > 0)
+-		return 0;
++		return success_walk(nd);
+ 
+ 	if (!status)
+ 		status = -ESTALE;
+diff --git a/include/trace/events/namei.h b/include/trace/events/namei.h
+new file mode 100644
+index 000000000000..9eed50e37190
+--- /dev/null
++++ b/include/trace/events/namei.h
+@@ -0,0 +1,31 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++
++#undef TRACE_SYSTEM
++#define TRACE_SYSTEM namei
++
++#if !defined(_TRACE_NAMEI_H) || defined(TRACE_HEADER_MULTI_READ)
++#define _TRACE_NAMEI_H
++
++#include <linux/tracepoint.h>
++
++TRACE_EVENT(namei_inode_path,
++	TP_PROTO(int ino, char *path_param),
++	TP_ARGS(ino, path_param),
++	TP_STRUCT__entry(
++		__field(int,	inode_no)
++		__array(char,	path, 32)
++	),
++	TP_fast_assign(
++		__entry->inode_no = ino;
++		memcpy(__entry->path, path_param, 32);
++		__entry->path[31] = 0;
++	),
++	TP_printk("inode_no: %d path: %s",
++		__entry->inode_no,
++		__entry->path
++	)
++);
++
++#endif /* _TRACE_NAMEI_H */
++
++#include <trace/define_trace.h>
+-- 
+2.21.0.360.g471c308f928-goog
+
