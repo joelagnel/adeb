@@ -259,7 +259,7 @@ if [ $DOWNLOAD -eq 1 ]; then
    TARF=$TDIR_ABS/$FNAME_UZ
 fi
 
-if [ ! -z "$FULL" ] && [ -z "$KERNELSRC" ] && [ -z "$KERNELHDRS" ] && [ -z "$BI" ]; then
+if [ ! -z "$FULL" ] && [ -z "$KERNELSRC" ] && [ -z "$KERNELHDRS" ] && [ -z "$BI" ] && [ $DOWNLOAD -eq 1 ]; then
 	c_info "Kernel headers are needed but none were provided. Downloading pre-built headers"
 	download_headers
 fi
