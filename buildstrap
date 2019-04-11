@@ -59,6 +59,9 @@ fi
 # Add a default DNS server
 echo "nameserver 4.2.2.2" > $OUT_TMP/etc/resolv.conf
 
+chroot $OUT_TMP apt update || true
+chroot $OUT_TMP apt install -y trace-cmd xz-utils || true
+
 # Clone BCC if needed
 if [ $INSTALL_BCC -eq 1 ]; then
 	git clone https://github.com/iovisor/bcc.git $TDIR/debian/bcc-master
