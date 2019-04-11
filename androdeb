@@ -60,7 +60,7 @@ case $key in
     --kernel-headers-targz) KERNELHDRS=$2; shift || true;	shift || true;	;;
     --tempdir) TDIR="$2"; shift || true;     shift || true;     ;;
     --build) DOWNLOAD=0;  shift || true;     ;;
-    --buildtar) BTAR=1; DOWNLOAD=0; TARDIR="$2"; shift || true;     shift || true;     ;;
+    --buildtar) BTAR=1; DOWNLOAD=0; TARDIR="$2"; SKIP_DEVICE=1; shift || true;     shift || true;     ;;
     --device|-s) ADB="$ADB -s $2"; shift || true; shift || true; ;;
     --ssh) REMOTE="ssh"; SSH_URI="$2"; shift || true; shift || true; ;;
     --sshpass) SSHPASS="sshpass -p$2"; shift || true; shift || true; ;;
@@ -324,6 +324,14 @@ sudo $spath/buildstrap $ARCH $DISTRO $TDIR $OUT_TMP \
 		$ex_files $INSTALL_BCC $SKIP_DEVICE
 rm $ex_files
 
+# Extract a tar of the built, compiled and installed androdeb env
+if [[ ! -z ${TARDIR+x} ]]; then
+	c_info "Creating tarball"
+	pushd $TARDIR
+	mv $TDIR/deb.tar.gz $FNAME_UZ
+	popd
+fi
+
 # If we only wanted to prepare a rootfs and don't have
 # a device connected, then just echo that and skip cleanup
 if [ $SKIP_DEVICE -eq 1 ]; then
@@ -345,21 +353,6 @@ remote_shell mkdir -p /data/androdeb/
 remote_copy $TDIR/deb.tar.gz /data/androdeb/
 remote_copy $spath/addons/* /data/androdeb/
 remote_shell /data/androdeb/device-unpack
-
-# Extract a tar of the built, compiled and installed androdeb env
-if [[ ! -z ${TARDIR+x} ]]; then
-	c_info "Creating tarball"
-	pushd $TARDIR
-	if [ $INSTALL_BCC -eq 0 ]; then
-		mv $TDIR/deb.tar.gz $FNAME_UZ
-	else
-		remote_shell /data/androdeb/build-debian-tar
-		remote_pull /data/androdeb/androdeb-fs.tgz $FNAME_UZ
-		remote_shell rm /data/androdeb/androdeb-fs.tgz;
-	fi
-	zip -r $FNAME $FNAME_UZ
-	popd
-fi
 
 do_cleanup
 
