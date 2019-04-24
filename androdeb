@@ -164,10 +164,9 @@ function push_unpack_headers() {
 	c_info "Storing kernel headers into androdeb /kernel-headers/"
 	remote_shell rm -rf /data/androdeb/debian/kernel-headers/
 	remote_shell mkdir  /data/androdeb/debian/kernel-headers/
-	tmpdir=$(mktemp -d)
-	tar -xvf $TDIR_ABS/kh.tgz -C $tmpdir > /dev/null
-	run_quiet remote_copy $tmpdir/* /data/androdeb/debian/kernel-headers/ > /dev/null
-	rm -rf $tmpdir
+	run_quiet remote_copy $TDIR_ABS/kh.tgz /data/androdeb/kh.tar.gz
+	remote_shell busybox tar -xzvf /data/androdeb/kh.tar.gz -C /data/androdeb/debian/kernel-headers/ > /dev/null
+	remote_shell rm /data/androdeb/kh.tar.gz
 }
 
 function push_unpack_tarred_headers() {
@@ -180,7 +179,7 @@ function push_unpack_tarred_headers() {
 	run_quiet remote_copy $1 /data/androdeb/
 
 	c_info "Storing kernel headers into androdeb root directory"
-	remote_shell tar -xvf /data/androdeb/$(basename $1) -C /data/androdeb/debian/ > /dev/null
+	remote_shell busybox tar -xvf /data/androdeb/$(basename $1) -C /data/androdeb/debian/ > /dev/null
 
 	remote_shell rm /data/androdeb/$(basename $1)
 }
