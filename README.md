@@ -168,8 +168,8 @@ device connected.
 
 ### How to use adeb for other Architectures (other than ARM64)
 By default adeb assumes the target Android device is based on ARM64
-processor architecture. For other architectures, use the --arch option. For
-example for x86_64 architecture, run:
+processor architecture. For other architectures, use the --arch and --build option.
+For example for x86_64 architecture, run:
 ```
 adeb prepare --build --arch amd64 --bcc --kernelsrc /path/to/kernel-source/
 ```
