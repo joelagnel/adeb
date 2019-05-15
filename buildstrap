@@ -59,6 +59,9 @@ fi
 # Add a default DNS server
 echo "nameserver 4.2.2.2" > $OUT_TMP/etc/resolv.conf
 
+chroot $OUT_TMP apt update || true
+chroot $OUT_TMP apt install -y trace-cmd xz-utils || true
+
 # Clone BCC if needed
 if [ $INSTALL_BCC -eq 1 ]; then
 	git clone https://github.com/iovisor/bcc.git $TDIR/debian/bcc-master
@@ -68,8 +71,6 @@ fi
 
 # Should we really do this?
 chmod -R 0777 $TDIR/
-
-[ $SKIP_DEVICE -eq 0 ] || exit 0
 
 c_info "Compressing new filesystem to prepare to push to Android /data/androdeb/"
 tar -zcf $TDIR/deb.tar.gz -C $TDIR debian
