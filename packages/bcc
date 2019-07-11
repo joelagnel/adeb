@@ -1,6 +1,6 @@
 PACKAGES+="
-llvm-6.0-dev
-libclang-6.0-dev
+llvm-7-dev
+libclang-7-dev
 libelf-dev
 libfl-dev
 libunwind-dev
@@ -17,7 +17,7 @@ ethtool
 flex
 bison
 python
-clang-6.0
+clang-7
 python-netaddr
 python-pyroute2
 "

@@ -1,6 +1,6 @@
 PACKAGES+="\
 git
-clang-6.0
+clang-7
 gcc
 libtool
 autoconf
