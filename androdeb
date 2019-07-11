@@ -55,9 +55,6 @@ case $key in
     --arch) ARCH=$2; shift || true; shift || true; ;;
     --archive) DOWNLOAD=0; TARF=$2; shift || true; shift || true; ;;
     --bcc) FULL=1; source $spath/packages/bcc; shift || true;     ;;
-    --kernelsrc) KERNELSRC="$2"; shift || true;     shift || true;     ;;
-    --skip-install) SKIP_INSTALL=1; shift || true; ;;
-    --kernel-headers-targz) KERNELHDRS=$2; shift || true;	shift || true;	;;
     --tempdir) TDIR="$2"; shift || true;     shift || true;     ;;
     --build) DOWNLOAD=0;  shift || true;     ;;
     --buildtar) BTAR=1; DOWNLOAD=0; TARDIR="$2"; shift || true;     shift || true;     ;;
@@ -158,33 +155,6 @@ function do_cleanup() {
 	rm -rf $TDIR/*; if [ $MKTEMP -eq 1 ]; then rm -rf $TDIR; fi
 }
 
-function push_unpack_headers() {
-	die_if_no_androdeb "Couldn't update headers."
-
-	c_info "Storing kernel headers into androdeb /kernel-headers/"
-	remote_shell rm -rf /data/androdeb/debian/kernel-headers/
-	remote_shell mkdir  /data/androdeb/debian/kernel-headers/
-	tmpdir=$(mktemp -d)
-	tar -xvf $TDIR_ABS/kh.tgz -C $tmpdir > /dev/null
-	run_quiet remote_copy $tmpdir/* /data/androdeb/debian/kernel-headers/ > /dev/null
-	rm -rf $tmpdir
-}
-
-function push_unpack_tarred_headers() {
-	die_if_no_androdeb "Couldn't update headers."
-
-	remote_shell rm -rf /data/androdeb/debian/kernel-headers/
-	remote_shell mkdir  /data/androdeb/debian/kernel-headers/
-
-	c_info "Pushing headers tar onto device"
-	run_quiet remote_copy $1 /data/androdeb/
-
-	c_info "Storing kernel headers into androdeb root directory"
-	remote_shell tar -xvf /data/androdeb/$(basename $1) -C /data/androdeb/debian/ > /dev/null
-
-	remote_shell rm /data/androdeb/$(basename $1)
-}
-
 function all_done_banner() {
 	c_info "All done! Run \"adeb shell\" to enter environment"
 }
@@ -212,30 +182,10 @@ function check_repo_url () {
 	fi
 }
 
-function download_headers() {
-	KERNEL_MAJOR=`remote_shell uname -r | cut -d - -f 1 | cut -d . -f 1`
-	KERNEL_MINOR=`remote_shell uname -r | cut -d - -f 1 | cut -d . -f 2`
-	KERNEL_VERSION="$KERNEL_MAJOR.$KERNEL_MINOR"
-	PREBUILT_HEADERS_FILE=headers-$ARCH-$KERNEL_VERSION.tar.gz.zip
-
-	check_repo_url
-
-	curl -L https://$ADEB_REPO_URL/releases/download/$VERSION/$PREBUILT_HEADERS_FILE --output $TDIR_ABS/$PREBUILT_HEADERS_FILE ||
-		   die 9 "Failed to download kernel headers. Please check your internet connection and repository URL"
-
-	unzip -e $TDIR_ABS/$PREBUILT_HEADERS_FILE -d $TDIR_ABS/ ||
-		   die 10 "Failed to download kernel headers. Kernel $KERNEL_VERSION for $ARCH may not be supported or ADEB_REPO_URL is incorrect."
-	KERNELHDRS=$TDIR_ABS/`echo "$PREBUILT_HEADERS_FILE" | sed "s/.zip//"`
-}
-
 # Prepare is the last command checked
 if [ -z "$PREPARE" ]; then usage; fi
 
 if [ ! -z "$TARF" ] && [ ! -f $TARF ] && [ -z "$DOWNLOAD" ]; then die 5 "archive provided doesn't exist"; fi
-
-if [ ! -z "$KERNELSRC" ] && [ ! -d $KERNELSRC ]; then die 6 "Kernel source directory provided doesn't exist"; fi
-
-if [ ! -z "$KERNELHDRS" ] && [ ! -f $KERNELHDRS ]; then die 7 "Kernel headers tar.gz doesn't exist"; fi
 
 print_prepare_banner
 
@@ -259,38 +209,7 @@ if [ $DOWNLOAD -eq 1 ]; then
    TARF=$TDIR_ABS/$FNAME_UZ
 fi
 
-if [ ! -z "$FULL" ] && [ -z "$KERNELSRC" ] && [ -z "$KERNELHDRS" ] && [ -z "$BI" ]; then
-	c_info "Kernel headers are needed but none were provided. Downloading pre-built headers"
-	download_headers
-fi
-
 OUT_TMP=$TDIR/debian; rm -rf $OUT_TMP; mkdir -p $OUT_TMP
-
-# Unpack the supplied kernel headers tar.gz directly into androdeb root
-if [ ! -z "$KERNELHDRS" ]; then
-	c_info "Building updating kernel headers from supplied tar.gz ($KERNELHDRS)"
-
-	# Is header tar gz update the only thing left to do?
-	if [[ ! -z "$SKIP_INSTALL" ]]; then
-		c_info "Skipping install"
-		push_unpack_tarred_headers $KERNELHDRS; do_cleanup; all_done_banner; exit 0; fi
-
-	tar -xvf $KERNELHDRS -C $OUT_TMP/ > /dev/null
-fi
-
-# Package kernel headers
-if [ ! -z "$KERNELSRC" ]; then
-	c_info "Building and updating kernel headers from kernel source dir ($KERNELSRC)"
-	$spath/bcc/build-kheaders-targz.sh ${KERNELSRC} $TDIR_ABS/kh.tgz > /dev/null
-
-	# Is header update the only thing left to do?
-	if [[ ! -z "$SKIP_INSTALL" ]]; then
-		c_info "Skipping install"
-		push_unpack_headers; do_cleanup; all_done_banner; exit 0; fi
-
-	mkdir $OUT_TMP/kernel-headers
-	tar -xvf $TDIR_ABS/kh.tgz -C $OUT_TMP/kernel-headers/ > /dev/null
-fi
 
 # Build FS from existing tar, very simple.
 if [ ! -z "$TARF" ]; then
@@ -305,9 +224,6 @@ if [ ! -z "$TARF" ]; then
 
 	c_info "Unpacking filesystem in device.."
 	run_quiet remote_shell /data/androdeb/device-unpack
-
-	if [ ! -z "$KERNELHDRS" ]; then push_unpack_tarred_headers $KERNELHDRS; fi
-	if [ ! -z "$KERNELSRC" ]; then push_unpack_headers; fi
 
 	do_cleanup; all_done_banner; exit 0
 fi

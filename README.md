@@ -148,7 +148,7 @@ function unless device has them already.
 
 ### Extract the FS from the device, after its prepared:
 ```
-adeb prepare --buildtar /path/
+adeb prepare --full --buildtar /path/
 ```
 After device is prepared, it will extract the root fs from it
 and store it as a tar archive at `/path/adeb-fs.tgz`. This
