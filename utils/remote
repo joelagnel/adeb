@@ -28,7 +28,7 @@ function remote_adb_shell() {
 }
 
 function remote_adb_pull() {
-	if [ $1 == "-a" ]; then
+	if [ "x$1" == "x-a" ]; then
 		PRESERVE="-a"
 		c_info "Preserving filestamps and mode"
 		shift || true
