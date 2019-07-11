@@ -108,19 +108,6 @@ to add it to your known_hosts.
 
 More advanced usage instructions
 --------------------------------
-### Install kernel headers in addition to preparing adeb device:
-```
-adeb prepare --kernelsrc /path/to/kernel-source
-```
-
-### Update kernel headers onto an already prepared device:
-
-If you need to put kernel sources for an existing install, run:
-```
-adeb prepare --kernelsrc /path/to/kernel-source --skip-install
-```
-Note: The kernel sources should have been built (atleast build should have started).
-
 ### Build and prepare device with a custom rootfs locally:
 
 The adeb fs will be prepared locally by downloading packages as needed:
@@ -134,17 +121,11 @@ If you wish to do a full build (that is locally prepare a rootfs with all packag
 adeb prepare --full --build
 ```
 
-### Add kernel headers to device in addition to building locally:
-```
-adeb prepare --build --kernelsrc /path/to/kernel-source/
-```
-
 ### Build/install a base image with BCC:
 ```
-adeb prepare --build --bcc --kernelsrc /path/to/kernel-source/
+adeb prepare --bcc --build
 ```
-Note: BCC is built from source. Also `--kernelsrc` is recommended for tools to
-function unless device has them already.
+Note: BCC is built from source.
 
 ### Extract the FS from the device, after its prepared:
 ```
@@ -171,10 +152,12 @@ By default adeb assumes the target Android device is based on ARM64
 processor architecture. For other architectures, use the --arch and --build option.
 For example for x86_64 architecture, run:
 ```
-adeb prepare --build --arch amd64 --bcc --kernelsrc /path/to/kernel-source/
+adeb prepare --build --arch amd64
 ```
-Note: The --download option ignores the --arch flag. This is because we only
-provide pre-built filesystems for ARM64 at the moment.
+Note: For arch other than ARM 64-bit, you have to pass the --build option to
+adeb.  Without this, adeb tries to download an ARM image and will not work.
+TODO: We should auto detect this issue and provide an informative error.  This
+is because we only provide pre-built filesystems for ARM 64-bit at the moment.
 
 Common Trouble shooting
 -----------------

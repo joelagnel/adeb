@@ -13,55 +13,43 @@ documentation.
 
 Quick Start
 -----------
-adeb is the primary vehicle for running BCC on Android. It supports
-preparing the target Android device with necessary kernel headers, cloning and
-building BCC on device, and other setup. Take a look a quick look at [adeb
-README](https://github.com/joelagnel/adeb/blob/master/README.md) so that
-you're familiar with what it is.
+adeb is the primary vehicle for running BCC on Android. It supports preparing
+the target Android device, cloning and building BCC on device, and other setup.
+Take a look a quick look at [adeb
+README](https://github.com/joelagnel/adeb/blob/master/README.md) so that you're
+familiar with what it is.
 
-To download a prebuilt filesystem with BCC already built/installed for an ARM64
-device, you can just run:
+To download a prebuilt filesystem with BCC already built/installed for an ARM
+64-bit device, you can just run:
 ```
 adeb prepare --full
 ```
 
-This downloads the FS and also downloads prebuilt kernel headers after
-detecting your device's kernel version. Running BCC this way may cause a warning
-at startup since the headers may not be an *exact* match for your kernel's
-sublevel (only version and patchlevel are matched), however it works well in
-our testing and could be used, as long as you can tolerate the warning.
+This downloads a prebuilt filesystem for ARM 64-bit and sets it up on your device.
 
-If you would like to setup your own kernel headers and prevent the warning,
-you can point adeb to the kernel sources which will extract headers from there:
-```
-adeb prepare --full --kernelsrc /path/to/kernel-source/
-```
-For targets other than ARM64, see the [Other Architectures
+If your device is an architecture other than ARM64, see the [Other
+Architectures
 section](https://github.com/joelagnel/adeb/blob/master/BCC.md#other-architectures-other-than-arm64)
 
 Now to run BCC, just start an adeb shell: `adeb shell`. This uses adb
-as the backend to start a shell into your adeb environment. Try running
+in the background to start a shell into your adeb environment. Try running
 `opensnoop` or any of the other BCC tracers to confirm that the setup worked
 correctly.
 
 If building your own kernel, following are the kernel requirements:
 
-You need kernel 4.9 or newer. Anything less needs backports. Your kernel needs
-to be built with the following config options at the minimum:
+You need kernel 4.9 or newer. Anything less needs backports. Your kernel also
+needs to be built with the following config options at the minimum:
 ```
 CONFIG_KPROBES=y
 CONFIG_KPROBE_EVENT=y
 CONFIG_BPF_SYSCALL=y
+CONFIG_IKHEADERS=m
 ```
 Optionally,
 ```
 CONFIG_UPROBES=y
 CONFIG_UPROBE_EVENT=y
-```
-Additionally, for the criticalsection BCC tracer to work, you need:
-```
-CONFIG_DEBUG_PREEMPT=y
-CONFIG_PREEMPTIRQ_EVENTS=y
 ```
 
 Build BCC during adeb install (Optional)
@@ -69,7 +57,7 @@ Build BCC during adeb install (Optional)
 If you would like the latest upstream BCC built and installed on your Android
 device, you can run:
 ```
-adeb prepare --build --bcc --kernelsrc /path/to/kernel-source/
+adeb prepare --build --bcc
 ```
 NOTE: This is a slow process and can take a long time. Since it not only builds
 BCC but also installs all non-BCC debian packages onto the filesystem and configures them.
@@ -80,12 +68,13 @@ By default adeb assumes the target Android device is based on ARM64
 processor architecture. For other architectures, use the --arch option. For
 example for x86_64 architecture, run:
 ```
-adeb prepare --arch amd64 --build --bcc --kernelsrc /path/to/kernel-source/
+adeb prepare --arch amd64 --build --bcc
 ```
 Note: The --download option ignores the --arch flag. This is because we only
 provide pre-built filesystems for ARM64 at the moment.
-Note: If you pass --arch, you have to pass --build, because prebuilt
-filesystems are not available for non-arm64 devices.
+Note: For arch other than 64-bit ARM, you have to pass --build, because
+prebuilt filesystems are not available for other non-ARM64 architectures at the
+moment.
 
 Common Issues
 -------------
