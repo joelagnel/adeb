@@ -2,7 +2,7 @@
 set -e
 
 # Given a path, make an ext4 image out of it, store it in $2
-dd if=/dev/zero of=$2 bs=4k count=$((256 * 1024 * 2))
+dd if=/dev/zero of=$2 bs=4k count=1 seek=$((256 * 1024 * 7))
 mkfs.ext4 $2
 
 OUT=`mktemp -d`
