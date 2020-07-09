@@ -36,6 +36,12 @@ do_mounts()
 		mkdir -p debian/vendor/
 		mount --bind /vendor debian/vendor/
 	fi
+
+  if [ -d /dev/binderfs/ ]; then
+    mkdir -p debian/dev/binderfs
+    mount --bind /dev/binderfs/ debian/dev/binderfs
+  fi
+
 }
 
 mount | grep debian > /dev/null
