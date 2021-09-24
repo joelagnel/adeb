@@ -47,7 +47,7 @@ Other distributions may work but they are not tested.
 
 Quick Start Instructions
 ------------------------
-* First clone this repository into adb and cd into it.
+* First clone this repository into adeb and cd into it.
 ```
 cd adeb
 
