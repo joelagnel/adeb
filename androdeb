@@ -63,6 +63,7 @@ case $key in
     --sshpass) SSHPASS="sshpass -p$2"; shift || true; shift || true; ;;
     --build-image) BI=1; BUILD_IMAGEF=$2; SKIP_DEVICE=1; DOWNLOAD=0; shift || true; shift || true; ;;
     --debug) set -x; shift || true; ;;
+    --distro) DISTRO="$2"; shift || true; shift || true; ;;
     *) c_error "Unknown option ($1)"; usage; ;;
 esac
 done
