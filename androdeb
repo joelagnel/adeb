@@ -19,6 +19,7 @@ FULL=0				# Default to a minimal install
 DOWNLOAD=1			# Default to downloading from web
 SKIP_DEVICE=0			# Skip device preparation
 INSTALL_BCC=0			# Decide if BCC is to be installed
+DEBIAN_URL=http://ftp.us.debian.org/debian/
 
 # Default packages
 PACKAGES=""
@@ -64,6 +65,7 @@ case $key in
     --build-image) BI=1; BUILD_IMAGEF=$2; SKIP_DEVICE=1; DOWNLOAD=0; shift || true; shift || true; ;;
     --debug) set -x; shift || true; ;;
     --distro) DISTRO="$2"; shift || true; shift || true; ;;
+    --mirror) DEBIAN_URL="$2"; shift || true; shift || true; ;;
     *) c_error "Unknown option ($1)"; usage; ;;
 esac
 done
@@ -238,7 +240,7 @@ ex_files=$(mktemp); echo $EXTRA_FILES > $ex_files
 
 sudo $spath/buildstrap $ARCH $DISTRO $TDIR $OUT_TMP \
 		"$(make_csv "$PACKAGES")"\
-		$ex_files $INSTALL_BCC $SKIP_DEVICE
+		$ex_files $INSTALL_BCC $SKIP_DEVICE $DEBIAN_URL
 rm $ex_files
 
 # If we only wanted to prepare a rootfs and don't have

@@ -34,6 +34,8 @@ usage() {
 	c_info ""
 	c_info "	  --build-image	Build an ext4 .img with the base image and BCC (useful for Qemu)"
 	c_info ""
+	c_info "	  --mirror	Specific the mirror for downloading debian images"
+	c_info ""
 	c_info "	** Folowing are misc build options **"
 	c_info "	  --tempdir	Use a specific temporary directory for build operation"
 	c_info "	  --arch		Specify an ARCH to build for (default arm64)"

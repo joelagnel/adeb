@@ -13,9 +13,10 @@ EXTRA_FILES="$(cat $6)"
 INSTALL_BCC=$7
 SKIP_DEVICE=$8		# Skip any device-specific stages
 VARIANT="--variant=minbase"
+REPO_URL=$9
 
 time qemu-debootstrap --arch $ARCH --include=$PACKAGES $VARIANT \
-	$DISTRO $OUT_TMP http://ftp.us.debian.org/debian/
+	$DISTRO $OUT_TMP $REPO_URL
 
 # Some reason debootstrap leaves these mounted
 umount $OUT_TMP/proc/sys/fs/binfmt_misc || true
