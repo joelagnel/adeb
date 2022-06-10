@@ -12,7 +12,7 @@ source $spath/utils/banners
 source $spath/utils/remote
 
 # Set default vars
-DISTRO=buster; ARCH=arm64
+DISTRO=bullseye; ARCH=arm64
 ADB="adb"
 REMOTE="adb"
 FULL=0				# Default to a minimal install
@@ -63,6 +63,7 @@ case $key in
     --sshpass) SSHPASS="sshpass -p$2"; shift || true; shift || true; ;;
     --build-image) BI=1; BUILD_IMAGEF=$2; SKIP_DEVICE=1; DOWNLOAD=0; shift || true; shift || true; ;;
     --debug) set -x; shift || true; ;;
+    --distro) DISTRO="$2"; shift || true; shift || true; ;;
     *) c_error "Unknown option ($1)"; usage; ;;
 esac
 done
