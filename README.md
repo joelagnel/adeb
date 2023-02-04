@@ -1,3 +1,9 @@
+> Note: I no longer work on Android, the project
+ is not maintained for new Android and Debian
+ releases, but likely works with little effort.
+ I suggest reaching out to me if you are
+ interested in maintaining it and I will decide].
+
 adeb
 --------
 
